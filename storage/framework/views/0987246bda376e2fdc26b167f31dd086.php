@@ -1,0 +1,1 @@
+<?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?><?php /**PATH /Users/angelomiranda/Projects/greekgods/storage/framework/views/c9a6c171cef551dbc8ae56e4fc70cb40.blade.php ENDPATH**/ ?>

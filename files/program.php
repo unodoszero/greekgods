@@ -1,32 +1,18 @@
 <?php
 session_start();
+require_once __DIR__ . '/../includes/database.php';
 
 // if (!isset($_SESSION['user_id'])) {
 //     header("Location: ./login.php");
 //     exit();
 // }
 
-$userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-
-$servername = "sql205.infinityfree.com"; // Replace with your database server
-$username = "if0_37850282"; // Replace with your database username
-$password = "4oxm7N4BFghQI9U"; // Replace with your database password
-$dbname = "if0_37850282_register"; // Replace with your database name
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+$userId = current_user_id();
 
 // Fetch user details
-$sql = "SELECT firstName, lastName FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$stmt->bind_result($firstName, $lastName);
-$stmt->fetch();
-$stmt->close();
+$userName = fetch_user_name($userId);
+$firstName = $userName['firstName'];
+$lastName = $userName['lastName'];
 
 // Check if a program already exists for the user
 $existingProgram = false;
@@ -34,33 +20,30 @@ $existingProgramDetails = null;  // Initialize this as null
 
 if ($userId) {
     // Check if there's an existing program for the user
-    $sql = "SELECT program, schedule FROM program WHERE user_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt = db()->prepare("SELECT program, schedule FROM programs WHERE user_id = :user_id");
+    $stmt->execute(['user_id' => $userId]);
+    $existingProgramDetails = $stmt->fetch();
 
     // If a program exists, fetch the details
-    if ($result->num_rows > 0) {
+    if ($existingProgramDetails) {
         $existingProgram = true;
-        $existingProgramDetails = $result->fetch_assoc();  // Store the program and schedule details
     }
-
-    $stmt->close();
 }
 
 // Fetch user workouts
 $workoutData = [];
 if ($userId) {
-    $sql = "SELECT workoutName, workoutReps, workoutSets, workoutDay FROM workouts WHERE user_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $workoutData[] = $row;
-    }
-    $stmt->close();
+    $stmt = db()->prepare("
+        SELECT
+            workout_name AS \"workoutName\",
+            workout_reps AS \"workoutReps\",
+            workout_sets AS \"workoutSets\",
+            workout_day AS \"workoutDay\"
+        FROM workouts
+        WHERE user_id = :user_id
+    ");
+    $stmt->execute(['user_id' => $userId]);
+    $workoutData = $stmt->fetchAll();
 }
 
 // Handle the POST request when saving the program
@@ -70,54 +53,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['workouts'], $_POST['s
     $days = $_POST['days'];
 
     // Start transaction
-    $conn->begin_transaction();
+    $pdo = db();
+    $pdo->beginTransaction();
 
     try {
         // Delete existing program and workouts
-        $stmt = $conn->prepare("DELETE FROM program WHERE user_id = ?");
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $stmt->close();
+        $stmt = $pdo->prepare("DELETE FROM programs WHERE user_id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
 
-        $stmt = $conn->prepare("DELETE FROM workouts WHERE user_id = ?");
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $stmt->close();
+        $stmt = $pdo->prepare("DELETE FROM workouts WHERE user_id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
 
         // Save new program split and days in the program table
-        $stmt = $conn->prepare("INSERT INTO program (user_id, program, schedule) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $userId, $split, $days);
-        $stmt->execute();
-        $stmt->close();
+        $stmt = $pdo->prepare("
+            INSERT INTO programs (user_id, program, schedule)
+            VALUES (:user_id, :program, :schedule)
+        ");
+        $stmt->execute([
+            'user_id' => $userId,
+            'program' => $split,
+            'schedule' => $days,
+        ]);
 
         // Save new workouts in the workouts table
-        $stmt = $conn->prepare("INSERT INTO workouts (user_id, workoutName, workoutReps, workoutSets, workoutDay) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("
+            INSERT INTO workouts (user_id, workout_name, workout_reps, workout_sets, workout_day)
+            VALUES (:user_id, :workout_name, :workout_reps, :workout_sets, :workout_day)
+        ");
         foreach ($workouts as $workout) {
             if (isset($workout['workoutDay'], $workout['workoutName'], $workout['workoutSets'], $workout['workoutReps'])) {
-                $workoutDay = $workout['workoutDay'];
-                $workoutName = $workout['workoutName'];
-                $workoutSets = $workout['workoutSets'];
-                $workoutReps = $workout['workoutReps'];
-
-                $stmt->bind_param("isiis", $userId, $workoutName, $workoutReps, $workoutSets, $workoutDay);
-                $stmt->execute();
+                $stmt->execute([
+                    'user_id' => $userId,
+                    'workout_name' => $workout['workoutName'],
+                    'workout_reps' => (int) $workout['workoutReps'],
+                    'workout_sets' => (int) $workout['workoutSets'],
+                    'workout_day' => $workout['workoutDay'],
+                ]);
             }
         }
-        $stmt->close();
 
         // Commit transaction
-        $conn->commit();
+        $pdo->commit();
 
         echo json_encode(['success' => true, 'message' => 'Program saved successfully!']);
     } catch (Exception $e) {
         // Rollback transaction on error
-        $conn->rollback();
+        $pdo->rollBack();
         echo json_encode(['success' => false, 'message' => 'Failed to save program: ' . $e->getMessage()]);
     }
     exit();
 }
-
-$conn->close();
 ?>
 
 <!DOCTYPE html>

@@ -1,0 +1,14 @@
+/.phpunit.cache
+/.phpunit.result.cache
+/node_modules
+/public/build
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+auth.json
+database/database.sqlite
+includes/database.local.php
+npm-debug.log
+yarn-error.log

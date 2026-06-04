@@ -1,6 +1,6 @@
 <?php
 session_start();
-$userId = $_SESSION['user_id'];
+require_once __DIR__ . '/../includes/database.php';
 
 // Check if user_id is provided
 if (!isset($_SESSION['user_id'])) {
@@ -8,62 +8,44 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$servername = "sql205.infinityfree.com"; // Replace with your database server
-$username = "if0_37850282"; // Replace with your database username
-$password = "4oxm7N4BFghQI9U"; // Replace with your database password
-$dbname = "if0_37850282_register"; // Replace with your database name
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check if the connection was successful
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+$userId = current_user_id();
 
 // Determine today's weekday in PHP
 $today = date("l"); // Returns full day name, e.g., "Monday"
 
 // Fetch workouts for the current day
-$stmt = $conn->prepare("
-    SELECT workoutName, workoutReps, workoutSets
+$stmt = db()->prepare("
+    SELECT workout_name AS \"workoutName\", workout_reps AS \"workoutReps\", workout_sets AS \"workoutSets\"
     FROM workouts
-    WHERE user_id = ? AND workoutDay = ?
+    WHERE user_id = :user_id AND workout_day = :workout_day
 ");
-$stmt->bind_param("is", $userId, $today);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt->execute([
+    'user_id' => $userId,
+    'workout_day' => $today,
+]);
 
-$workouts = [];
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $workouts[] = $row;
-    }
-}
+$workouts = $stmt->fetchAll();
 
 echo "<script>const workouts = " . json_encode($workouts) . ";</script>";
 
 
 // Prepare SQL statement to fetch user data
-$stmt = $conn->prepare("SELECT firstName, lastName, birthdate, height, weight, activity FROM users WHERE user_id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt = db()->prepare("
+    SELECT first_name AS \"firstName\", last_name AS \"lastName\", birthdate, height, weight, activity
+    FROM users
+    WHERE id = :user_id
+");
+$stmt->execute(['user_id' => $userId]);
+$user = $stmt->fetch();
 
 
 // Fetch user data
-if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-
+if ($user) {
     // Pass user data to the front end
     echo "<script>const userData = " . json_encode($user) . ";</script>";
 } else {
     echo "Error: User not found.";
 }
-
-
-// Close the statement and connection
-$stmt->close();
-$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -164,7 +146,7 @@ $conn->close();
             <input type="text" id="email" name="email" >
 
             <label for="password">Password</label>
-            <input type="text" id="password" name="password">
+            <input type="password" id="password" name="password" placeholder="Leave blank to keep current password">
 
             <label for="first-name">First Name</label>
             <input type="text" id="first-name" name="first-name">
