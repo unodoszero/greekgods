@@ -13,3 +13,4 @@ database/database.sqlite
 includes/database.local.php
 npm-debug.log
 yarn-error.log
+.vercel

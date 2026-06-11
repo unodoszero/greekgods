@@ -6,10 +6,11 @@ vercel.env
 .phpunit.result.cache
 .qodo
 .vscode
-node_modules
+/bootstrap/cache/*.php
+/node_modules
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/testing/*
 storage/framework/views/*
 storage/logs/*
-vendor
+/vendor
