@@ -59,12 +59,14 @@ Route::redirect('/files/program.php', '/program');
 Route::redirect('/files/blog.php', '/blog');
 Route::redirect('/files/calculator.php', '/calculator');
 Route::redirect('/files/about.php', '/about');
+Route::redirect('/files/laws.html', '/laws');
 Route::redirect('/files/login', '/login');
 Route::redirect('/files/register', '/register');
 Route::redirect('/files/program', '/program');
 Route::redirect('/files/blog', '/blog');
 Route::redirect('/files/calculator', '/calculator');
 Route::redirect('/files/about', '/about');
+Route::redirect('/files/laws', '/laws');
 Route::get('/files/{path?}', function (?string $path = null) {
     $page = trim((string) $path, '/');
     $page = preg_replace('/\.(php|html)$/', '', $page);
@@ -77,6 +79,7 @@ Route::get('/files/{path?}', function (?string $path = null) {
         'blog' => redirect('/blog'),
         'calculator' => redirect('/calculator'),
         'about' => redirect('/about'),
+        'laws' => redirect('/laws'),
         default => abort(404),
     };
 })->where('path', '.*');

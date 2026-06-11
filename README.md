@@ -60,6 +60,55 @@ Run Laravel migrations on a fresh Supabase database:
 php artisan migrate
 ```
 
+## Vercel deployment
+
+This repository includes Vercel config for running Laravel through Vercel's PHP community runtime and serving static assets from `public`.
+
+In Vercel, use these project settings:
+
+```sh
+Framework Preset: Other
+Build Command: npm run build
+```
+
+Add these environment variables in Vercel. Do not commit real secrets.
+
+```sh
+APP_NAME=Greekgods
+APP_ENV=production
+APP_KEY=<output of php artisan key:generate --show>
+APP_DEBUG=false
+APP_URL=https://your-vercel-domain.vercel.app
+
+DB_CONNECTION=pgsql
+DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
+DB_PORT=6543
+DB_DATABASE=postgres
+DB_USERNAME=postgres.<project-ref>
+DB_PASSWORD=<password>
+DB_SSLMODE=require
+DB_EMULATE_PREPARES=true
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=sync
+LOG_CHANNEL=stderr
+VIEW_COMPILED_PATH=/tmp/views
+```
+
+After the Supabase variables are set locally, run production migrations once:
+
+```sh
+php artisan migrate --force
+```
+
+For Google or Microsoft login, create OAuth redirect URLs for the deployed domain:
+
+```sh
+https://your-vercel-domain.vercel.app/auth/google/callback
+https://your-vercel-domain.vercel.app/auth/microsoft/callback
+```
+
 ## Social login setup
 
 The app supports email/password login plus Google and Microsoft OAuth login through Laravel Socialite.
