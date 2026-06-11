@@ -1,4 +1,4 @@
-import '../../vendor/masmerise/livewire-toaster/resources/js';
+import './vendor/livewire-toaster';
 
 const dispatchToast = (type, message) => {
     if (!message || typeof window.Toaster?.[type] !== 'function') {
