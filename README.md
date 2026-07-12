@@ -15,21 +15,25 @@ GreekGods is a Laravel fitness planning application for creating weekly workout 
 
 - [Preview](#preview)
 - [Tech Stack](#tech-stack)
-- [Repository Overview](#repository-overview)
 - [Features](#features)
-- [Installation Guide](#installation-guide)
 - [Usage](#usage)
-- [Migration and Domain Logic](#migration-and-domain-logic)
 - [Constraints and Future Improvements](#constraints-and-future-improvements)
 - [License](#license)
 
 ## Preview
 
-| Preview                                                                                                                                                   | Description                                                                                             |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| <img src="public/preview/Screenshot%202026-07-03%20at%204.28.35%E2%80%AFPM.png" alt="GreekGods home page" width="360">                                    | Home page with authenticated navigation and a monochrome fitness hero visual.                           |
-| <img src="public/preview/FireShot%20Capture%20018%20-%20GreekGods%20-%20Profile%20-%20%5B127.0.0.1%5D.png" alt="GreekGods profile dashboard" width="360"> | Profile dashboard showing saved body metrics, BMI, calorie targets, and today's workout.                |
-| <img src="public/preview/Screenshot%202026-07-03%20at%204.31.06%E2%80%AFPM.png" alt="GreekGods weekly workout board" width="360">                         | Program builder with split selection, weekly schedule mapping, rest-day locking, and editable workouts. |
+| Preview | Description |
+| --- | --- |
+| <img src="public/preview/Home.png" alt="GreekGods home page" width="360"> | Home page with the main navigation and fitness hero section. |
+| <img src="public/preview/Login.png" alt="GreekGods login page" width="360"> | Login screen for returning users. |
+| <img src="public/preview/Register.png" alt="GreekGods registration page" width="360"> | Account registration screen for collecting user credentials and fitness profile details. |
+| <img src="public/preview/Register%202.png" alt="GreekGods registration continuation" width="360"> | Registration flow continuation for completing required profile information. |
+| <img src="public/preview/Profile.png" alt="GreekGods profile dashboard" width="360"> | Profile dashboard showing saved body metrics, BMI, calorie targets, and today's workout. |
+| <img src="public/preview/Program%20Page%20Splits.png" alt="GreekGods program split selection" width="360"> | Program builder split-selection step with available workout split templates. |
+| <img src="public/preview/Program%20Page%20Workouts.png" alt="GreekGods weekly workout board" width="360"> | Weekly workout board with schedule mapping, rest-day locking, and editable workouts. |
+| <img src="public/preview/Blog.png" alt="GreekGods blog page" width="360"> | Blog index for fitness education and training articles. |
+| <img src="public/preview/Blog%20Beginner.png" alt="GreekGods beginner blog article" width="360"> | Beginner-focused article page for learning core fitness concepts. |
+| <img src="public/preview/BMI%20Calculator.png" alt="GreekGods BMI calculator" width="360"> | BMI calculator page for estimating body composition category from height and weight. |
 
 ## Tech Stack
 
