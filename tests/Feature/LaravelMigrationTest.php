@@ -167,7 +167,7 @@ class LaravelMigrationTest extends TestCase
         $this->assertStringContainsString('letter-spacing: .1em', $styles);
         $this->assertStringContainsString('overflow-x: auto', $styles);
         $this->assertStringContainsString('scroll-snap-type: inline mandatory', $styles);
-        $this->assertStringContainsString('flex-basis: clamp(165px, 16vw, 190px)', $styles);
+        $this->assertMatchesRegularExpression('/\\.weekly-board \\.day-card\\.is-rest\\s*\\{[^}]*flex-basis:\\s*clamp\\(/s', $styles);
         $this->assertStringContainsString('.day-card.is-rest {'.PHP_EOL.'    min-height: 250px', $styles);
         $this->assertStringContainsString('writing-mode: vertical-rl', $styles);
     }

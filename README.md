@@ -76,6 +76,11 @@ npm run dev
 
 Open `http://127.0.0.1:8000`. The Vite URL on port 5173 serves frontend assets and is not the application page by itself.
 
+For production deployments, set `APP_ENV=production` and set `APP_URL` to the
+complete HTTPS origin, for example `https://greekgods-psi.vercel.app`. GreekGods
+also trusts Vercel's forwarded HTTPS headers so generated Vite, Livewire, OAuth,
+and application URLs are not blocked as mixed content.
+
 ## Development and verification
 
 ```bash

@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Vercel terminates TLS before forwarding requests to PHP. Trust its
+        // forwarding headers so Laravel generates HTTPS asset and route URLs.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'pending.social' => EnsurePendingSocialRegistration::class,
         ]);

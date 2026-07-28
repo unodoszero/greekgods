@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Content\ArticleCatalog;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class RepositoryStructureTest extends TestCase
@@ -99,5 +100,21 @@ class RepositoryStructureTest extends TestCase
             $this->assertStringContainsString('*', (string) file_get_contents($ignore));
             $this->assertStringContainsString('!.gitignore', (string) file_get_contents($ignore));
         }
+    }
+
+    public function test_forwarded_https_requests_generate_secure_asset_urls(): void
+    {
+        Route::get('/_deployment/asset-url', fn (): string => asset('build/example.css'));
+
+        $this->withServerVariables([
+            'REMOTE_ADDR' => '127.0.0.1',
+            'HTTP_HOST' => 'internal-vercel-runtime',
+            'HTTP_X_FORWARDED_HOST' => 'greekgods-psi.vercel.app',
+            'HTTP_X_FORWARDED_PORT' => '443',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+        ])
+            ->get('/_deployment/asset-url')
+            ->assertOk()
+            ->assertSeeText('https://greekgods-psi.vercel.app/build/example.css');
     }
 }

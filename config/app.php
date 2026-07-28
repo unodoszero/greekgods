@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'force_https' => (bool) env('FORCE_HTTPS', env('VERCEL', false)),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
