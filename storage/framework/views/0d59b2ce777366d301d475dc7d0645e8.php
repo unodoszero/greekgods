@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-    <link rel="icon" type="image/x-icon" href="/graphics/logo/logo.png">
+    <link rel="icon" type="image/png" href="/graphics/logo/logo.png">
+    <?php echo app('Illuminate\Foundation\Vite')('resources/css/palette.css'); ?>
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
 
     <?php echo $__env->yieldPushContent('styles'); ?>

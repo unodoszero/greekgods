@@ -49,40 +49,40 @@
             width: 100%;
             min-height: 48px;
             padding: 13px 46px 13px 16px;
-            border: 1px solid #e6e0d5;
+            border: 1px solid var(--gg-color-border);
             border-radius: 8px;
-            box-shadow: 0 16px 38px rgba(33, 33, 30, 0.18);
+            box-shadow: 0 16px 38px var(--gg-color-shadow-elevated);
             font-family: Trebuchet MS, Arial, sans-serif;
             font-size: 0.9rem;
             font-style: normal;
             font-weight: 800;
             line-height: 1.35;
-            color: #252421;
-            background: #ffffff;
+            color: var(--gg-color-text);
+            background: var(--gg-color-surface);
         }
 
         .gg-toast__message.is-success {
-            border-color: #b9dacb;
-            color: #123e2a;
-            background: #eaf8f1;
+            border-color: var(--gg-color-success-border);
+            color: var(--gg-color-success);
+            background: var(--gg-color-success-soft);
         }
 
         .gg-toast__message.is-error {
-            border-color: #f1b4aa;
-            color: #7b1f18;
-            background: #fff0ed;
+            border-color: var(--gg-color-danger-border);
+            color: var(--gg-color-danger);
+            background: var(--gg-color-danger-soft);
         }
 
         .gg-toast__message.is-warning {
-            border-color: #e7ca84;
-            color: #6e4d08;
-            background: #fff8df;
+            border-color: var(--gg-color-warning-border);
+            color: var(--gg-color-warning);
+            background: var(--gg-color-warning-soft);
         }
 
         .gg-toast__message.is-info {
-            border-color: #c3d5ee;
-            color: #1b406b;
-            background: #edf5ff;
+            border-color: var(--gg-color-action-border);
+            color: var(--gg-color-info);
+            background: var(--gg-color-action-soft);
         }
 
         .gg-toast__close {
@@ -105,7 +105,7 @@
 
         .gg-toast__close:hover,
         .gg-toast__close:focus-visible {
-            background: rgba(0, 0, 0, 0.08);
+            background: var(--gg-color-shadow-subtle);
             outline: none;
         }
 
@@ -146,6 +146,12 @@
 
             .gg-toast {
                 width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .gg-toast {
+                transition-duration: 1ms;
             }
         }
     </style>

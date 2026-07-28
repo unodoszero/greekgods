@@ -44,9 +44,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/program', [ProgramController::class, 'show'])->name('program');
     Route::post('/program', [ProgramController::class, 'store']);
     Route::delete('/program', [ProgramController::class, 'destroy']);
-    Route::post('/program/delete', [ProgramController::class, 'destroy']);
     Route::post('/program/workouts', [ProgramController::class, 'storeWorkout']);
-    Route::patch('/program/workouts/{workout}', [ProgramController::class, 'updateWorkout']);
+    Route::patch('/program/workouts/{workoutId}', [ProgramController::class, 'updateWorkout'])->whereNumber('workoutId');
     Route::delete('/program/workouts/{workoutId}', [ProgramController::class, 'destroyWorkout'])->whereNumber('workoutId');
     Route::redirect('/files/profile.php', '/profile');
     Route::redirect('/files/profile', '/profile');

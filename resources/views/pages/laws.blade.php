@@ -1,0 +1,118 @@
+@extends('layouts.app', ['title' => 'GreekGods | Terms of Use'])
+
+@push('styles')
+    @vite('resources/css/pages/laws.css')
+@endpush
+
+@section('content')
+<section>
+            <button type="button" class="greekgods" onclick="location.href='/'"><img src="/graphics/logo/greekgodslogo.png" alt="GreekGods Logo"></button>
+                <ul>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#information">Information We Collect</a></li>
+                    <li><a href="#use">How We Use Personal Data</a></li>
+                    <li><a href="#consent">Your Consent</a></li>
+                    <li><a href="#terms">Terms of Use</a></li>
+                    <li><a href="#conduct">Conduct</a></li>
+                    <li><a href="#privacy">Privacy</a></li>
+                    <li><a href="#disclaimers">Disclaimers</a></li>
+                    <li><a href="#limitations">Limitations and Termination</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+                <button class="print-button" title="Print this page">Print</button>
+        </section>
+<main>
+        <p class="date">Date Published: <time datetime="2024-11-18">November 18, 2024</time></p>
+        <p class="date">Effective: <time datetime="2024-12-07T09:00">December 7, 2024, 09:00 AM</time></p>
+        <article id="introduction">
+            <h2>Introduction</h2>
+            <p>Welcome to the Terms of Use page for GreekGods. By accessing or using our website, you agree to comply with the terms outlined here. This document serves as a contract between you and GreekGods, ensuring that you understand and accept the rules and guidelines governing the use of our services. Please take the time to read through the entire Terms of Use to make sure you are informed about your rights and obligations.</p>
+        </article>
+
+        <article id="information">
+            <h2>Information We Collect</h2>
+            <p>We collect only the information necessary to provide you with the highest quality of service. The types of Personal Data collected on these pages include:</p>
+            <ul>
+                <li>Name</li>
+                <li>Age / Birthdate</li>
+                <li>Gender</li>
+                <li>Email Address</li>
+                <li>Height</li>
+                <li>Weight</li>
+                <li>Body Percentage</li>
+                <li>Activity Level Per Week</li>
+            </ul>
+        </article>
+
+        <article id="use">
+            <h2>How We Use Personal Data</h2>
+            <p>We will only process your Personal Data, including sharing it with third parties, under the following conditions:</p>
+            <ul>
+                <li>When you have provided your consent, which you may withdraw at any time.</li>
+                <li>When processing is necessary to protect your vital interests or those of another individual.</li>
+            </ul>
+            <p>We may use the Personal Data you provide for the following purposes:</p>
+            <ul>
+                <li>To administer GreekGods Services and facilitate internal operations such as troubleshooting, data analysis, testing, research, and statistical and survey purposes.</li>
+                <li>To enhance GreekGods Services, ensuring that content is delivered in the most effective manner for you.</li>
+                <li>To assess and understand the effectiveness of advertising served to you and others, and to deliver advertising relevant to your interests.</li>
+                <li>To offer suggestions and recommendations to you and other users of GreekGods Services regarding goods or services that may be of interest.</li>
+            </ul>
+        </article>
+
+        <article id="consent">
+            <h2>Your Consent</h2>
+            <p>By using our website, you consent to the collection and use of your information by GreekGods as outlined in this document. Should we make any changes to our privacy policy, those changes will be posted on this page to ensure you remain informed about the information we collect, how we utilize it, and the conditions under which we disclose it.</p>
+            <p>We will not sell your Personal Data to third parties without your consent. With your consent, we may periodically send information regarding our services to the email or mailing address you have provided. Except where we believe such action is necessary to comply with applicable laws or legal processes or to protect the interests of GreekGods or others, we will not disclose your Personal Data without your consent.</p>
+        </article>
+
+        <article id="terms">
+            <h2>Terms of Use</h2>
+            <p>This website, developed by students from Tarlac State University’s College of Computer Studies in the Bachelor of Science in Computer Science program, is primarily for educational purposes. It may also be used by consumers or businesses. By accessing or using this website, you agree to adhere to its Terms of Use. If you do not agree with any terms or guidelines outlined, your sole option is to stop using the website immediately.</p>
+            <p>The developer reserves the right, at its sole discretion, to change, modify, or alter the Terms of Use at any time. Such changes shall become effective immediately upon their posting. You are responsible for reviewing the Terms of Use regularly to stay informed of any changes, as continued use of the website constitutes acceptance of the updated terms.</p>
+        </article>
+
+        <article id="conduct">
+            <h2>Conduct</h2>
+            <p>You agree not to post or share any text, files, images, videos, audio, or other materials ("Content") on this Website that:</p>
+            <ul>
+                <li>Infringes upon any patents, trademarks, copyrights, trade secrets, or other intellectual property rights.</li>
+                <li>Violates any applicable local, state, federal, or international laws.</li>
+                <li>Is threatening, harassing, defamatory, or otherwise abusive.</li>
+                <li>May harm minors.</li>
+                <li>Contains self-promotional advertising or marketing in public areas of the Website that have not been paid for or designated for promotional content.</li>
+                <li>Includes software viruses or harmful code.</li>
+                <li>Disrupts the normal flow of user interactions on the Website.</li>
+                <li>Contains misleading or false information.</li>
+                <li>Uses forged headers or other identifiers to mask the origin of the Content.</li>
+            </ul>
+            <p>You also agree not to attempt to decompile, reverse-engineer, or uncover any source code within the Website. Without explicit permission, you will not reproduce, copy, sell, or commercially exploit any portion of the Website.</p>
+        </article>
+
+        <article id="privacy">
+            <h2>Privacy</h2>
+            <p>Please review our Privacy Policy for information on the Company's collection, disclosure, and use of personally identifiable information, as well as other privacy-related matters. Using the Website means you agree to the Privacy Policy and Terms of Use.</p>
+        </article>
+
+        <article id="disclaimers">
+            <h2>Disclaimers</h2>
+            <p>By using GreekGods, you agree that nothing on the site should be considered as or used as a substitute for medical advice, diagnosis, or treatment.</p>
+            <p>Additionally, you acknowledge that some activities demonstrated on this site carry certain risks, including but not limited to heart attack, stroke, injury to bones, joints, or muscles, and serious spinal or neck injuries that could result in partial or complete paralysis. You are voluntarily participating in these activities with full awareness of the potential risks and agree to accept all inherent risks of injury, property damage, or death.</p>
+        </article>
+
+        <article id="limitations">
+            <h2>Limitations and Termination</h2>
+            <p>The group may impose limitations on your use of the Website, including but not limited to the number of times you can access it. These limitations may include a complete termination of your access to the Website. You agree that the group has the right, at any time and in its sole discretion, with or without notice, to modify or discontinue the Website (or any part of it).</p>
+        </article>
+
+        <article id="about">
+            <h2>About</h2>
+            <p>Welcome to GreekGods, your partner in unlocking your full potential. Our mission is to guide you on your fitness journey with personalized workout plans, insights, and practical advice designed for your goals. With a user-friendly interface and personalized recommendations, we help you stay focused and motivated on your fitness journey. 
+                Whether you're just starting your fitness journey or aiming to push your limits, we offer the tools and support to help you succeed. We believe that fitness is not just a goal to achieve, but an ongoing adventure that evolves with you. It's a journey of growth, discovery, and transformation that lasts for a lifetime. </p>
+        </article>
+    </main>
+@endsection
+
+@push('scripts')
+    @vite('resources/js/pages/laws.js')
+@endpush

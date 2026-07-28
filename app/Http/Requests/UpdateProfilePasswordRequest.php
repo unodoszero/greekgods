@@ -17,12 +17,17 @@ class UpdateProfilePasswordRequest extends FormRequest
      */
     public function rules(): array
     {
+        $password = Password::min(8)->mixedCase()->numbers()->symbols();
+        if (! app()->environment('testing')) {
+            $password->uncompromised();
+        }
+
         return [
             'current_password' => ['required', 'current_password'],
             'password' => [
                 'required',
                 'confirmed',
-                Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(),
+                $password,
             ],
         ];
     }

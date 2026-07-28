@@ -19,11 +19,9 @@ class ProgramController extends Controller
     {
         $user = Auth::user();
         AuthSessionIdentity::store($request, $user);
-        $program = $user->programs()->latest('id')->first();
-        $workouts = $user->workouts()
-            ->orderBy('id')
-            ->get(['id', 'workout_name as workoutName', 'workout_focus as workoutFocus', 'workout_reps as workoutReps', 'workout_sets as workoutSets', 'workout_day as workoutDay']);
+        $program = $user->programs()->with('workouts')->first();
         $programState = null;
+        $workouts = [];
 
         if ($program) {
             $split = WorkoutSplitCatalog::normalizeSplit($program->program);
@@ -35,88 +33,75 @@ class ProgramController extends Controller
                     'split' => $split,
                     'schedule' => $schedule,
                 ];
+                $workouts = $program->workouts->map(fn (Workout $workout): array => $this->workoutPayload($workout))->values();
             }
         }
 
         return view('program.show', [
             'user' => $user,
-            'program' => $program,
             'programState' => $programState,
             'workouts' => $workouts,
             'splitCatalog' => WorkoutSplitCatalog::all(),
+            'workoutTemplates' => config('preconfigured_workouts'),
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'split' => ['required', 'string'],
-            'schedule' => ['nullable', 'string'],
-            'days' => ['nullable', 'string'],
-            'workouts' => ['nullable'],
+            'schedule' => ['required', 'string'],
+            'workouts' => ['required', 'array', 'min:1'],
+            'workouts.*.day' => ['required', 'string'],
+            'workouts.*.name' => ['required', 'string', 'max:120'],
+            'workouts.*.focus' => ['nullable', 'string', 'max:120'],
+            'workouts.*.sets' => ['required', 'integer', 'min:1', 'max:50'],
+            'workouts.*.reps_min' => ['required', 'integer', 'min:1', 'max:100'],
+            'workouts.*.reps_max' => ['required', 'integer', 'min:1', 'max:100'],
+            'workouts.*.position' => ['required', 'integer', 'min:0', 'distinct'],
         ]);
 
-        $split = WorkoutSplitCatalog::normalizeSplit($request->string('split')->toString());
-        $schedule = $split ? WorkoutSplitCatalog::normalizeSchedule($split, $request->input('schedule', $request->input('days'))) : null;
+        $split = WorkoutSplitCatalog::normalizeSplit($validated['split']);
+        $schedule = $split ? WorkoutSplitCatalog::normalizeSchedule($split, $validated['schedule']) : null;
 
         if ($split === null || $schedule === null) {
-            throw ValidationException::withMessages([
-                'schedule' => 'Select a valid split and schedule.',
-            ]);
+            throw ValidationException::withMessages(['schedule' => 'Select a valid split and schedule.']);
         }
 
-        $hasWorkoutPayload = $request->has('workouts')
-            && $request->input('workouts') !== null
-            && $request->input('workouts') !== '';
-        $workouts = $hasWorkoutPayload
-            ? $this->optionalWorkoutPayload($request->input('workouts'))
-            : $this->preconfiguredWorkouts($split, $schedule);
+        foreach ($validated['workouts'] as $index => $workout) {
+            if (! WorkoutSplitCatalog::isTrainingDay($split, $schedule, $workout['day'])) {
+                throw ValidationException::withMessages([
+                    "workouts.{$index}.day" => 'Workouts can only be added to configured training days.',
+                ]);
+            }
 
-        $user = Auth::user();
+            if ((int) $workout['reps_min'] > (int) $workout['reps_max']) {
+                throw ValidationException::withMessages([
+                    "workouts.{$index}.reps_min" => 'Minimum reps cannot be greater than maximum reps.',
+                ]);
+            }
+        }
 
-        $createdWorkouts = DB::transaction(function () use ($user, $split, $schedule, $workouts, $hasWorkoutPayload): array {
-            $user->programs()->delete();
-            $user->workouts()->delete();
+        $program = DB::transaction(function () use ($split, $schedule, $validated): Program {
+            Auth::user()->programs()->delete();
 
-            Program::create([
-                'user_id' => $user->id,
+            $program = Auth::user()->programs()->create([
                 'program' => $split,
                 'schedule' => $schedule,
             ]);
 
-            $createdWorkouts = [];
-
-            foreach ($workouts as $workout) {
-                $day = (string) ($workout['workoutDay'] ?? $workout['day'] ?? '');
-
-                if (! WorkoutSplitCatalog::isTrainingDay($split, $schedule, $day)) {
-                    throw ValidationException::withMessages([
-                        'day' => 'Workouts can only be added to configured training days.',
-                    ]);
-                }
-
-                $created = $user->workouts()->create([
-                    'workout_day' => $day,
-                    'workout_name' => (string) ($workout['workoutName'] ?? $workout['workout_name'] ?? ''),
-                    'workout_focus' => $hasWorkoutPayload ? null : $this->nullableString($workout['workoutFocus'] ?? $workout['workout_focus'] ?? null),
-                    'workout_sets' => $hasWorkoutPayload ? $this->positiveInt($workout['workoutSets'] ?? $workout['workout_sets'] ?? null) : null,
-                    'workout_reps' => $hasWorkoutPayload ? $this->positiveInt($workout['workoutReps'] ?? $workout['workout_reps'] ?? null) : null,
-                ]);
-
-                $createdWorkouts[] = $this->workoutPayload($created);
+            foreach ($validated['workouts'] as $workout) {
+                $program->workouts()->create($this->workoutAttributes($workout));
             }
 
-            return $createdWorkouts;
+            return $program->load('workouts');
         });
 
         return response()->json([
             'success' => true,
-            'message' => $hasWorkoutPayload ? 'Program saved.' : 'Program saved. Preconfigured workouts added.',
-            'program' => [
-                'split' => $split,
-                'schedule' => $schedule,
-            ],
-            'workouts' => $createdWorkouts,
+            'message' => 'Program saved.',
+            'program' => ['id' => $program->id, 'split' => $split, 'schedule' => $schedule],
+            'workouts' => $program->workouts->map(fn (Workout $workout): array => $this->workoutPayload($workout))->values(),
         ]);
     }
 
@@ -124,16 +109,10 @@ class ProgramController extends Controller
     {
         $program = $this->currentProgram();
         $data = $this->validatedWorkout($request);
-
         $this->ensureTrainingDay($program, $data['day']);
 
-        $workout = Auth::user()->workouts()->create([
-            'workout_day' => $data['day'],
-            'workout_name' => $data['workout_name'],
-            'workout_focus' => null,
-            'workout_sets' => $data['workout_sets'],
-            'workout_reps' => $data['workout_reps'],
-        ]);
+        $position = (int) $program->workouts()->max('position') + 1;
+        $workout = $program->workouts()->create($this->workoutAttributes([...$data, 'position' => $position]));
 
         return response()->json([
             'success' => true,
@@ -142,21 +121,14 @@ class ProgramController extends Controller
         ]);
     }
 
-    public function updateWorkout(Request $request, Workout $workout): JsonResponse
+    public function updateWorkout(Request $request, int $workoutId): JsonResponse
     {
-        $this->authorizeWorkout($workout);
         $program = $this->currentProgram();
+        $workout = $program->workouts()->findOrFail($workoutId);
         $data = $this->validatedWorkout($request);
-
         $this->ensureTrainingDay($program, $data['day']);
 
-        $workout->fill([
-            'workout_day' => $data['day'],
-            'workout_name' => $data['workout_name'],
-            'workout_focus' => null,
-            'workout_sets' => $data['workout_sets'],
-            'workout_reps' => $data['workout_reps'],
-        ])->save();
+        $workout->fill($this->workoutAttributes([...$data, 'position' => $workout->position]))->save();
 
         return response()->json([
             'success' => true,
@@ -167,38 +139,38 @@ class ProgramController extends Controller
 
     public function destroyWorkout(int $workoutId): JsonResponse
     {
-        $deleted = Workout::query()
-            ->whereKey($workoutId)
-            ->where('user_id', Auth::id())
-            ->delete();
+        $program = $this->currentProgram();
+        $workout = $program->workouts()->findOrFail($workoutId);
+        $position = $workout->position;
 
-        abort_if($deleted === 0, 404);
+        DB::transaction(function () use ($program, $workout, $position): void {
+            $workout->delete();
+            $program->workouts()
+                ->where('position', '>', $position)
+                ->orderBy('position')
+                ->get()
+                ->each(function (Workout $remaining): void {
+                    $remaining->decrement('position');
+                });
+        });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Workout removed.',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Workout removed.']);
     }
 
     public function destroy(): JsonResponse
     {
-        $userId = Auth::id();
+        Auth::user()->programs()->delete();
 
-        DB::transaction(function () use ($userId): void {
-            Workout::query()->where('user_id', $userId)->delete();
-            Program::query()->where('user_id', $userId)->delete();
-        });
-
-        return response()->json(['success' => true, 'message' => 'Program and workouts deleted successfully']);
+        return response()->json(['success' => true, 'message' => 'Program removed.']);
     }
 
     private function currentProgram(): Program
     {
-        $program = Auth::user()->programs()->latest('id')->first();
+        $program = Auth::user()->programs()->first();
 
         if (! $program) {
             throw ValidationException::withMessages([
-                'program' => 'Save a workout split before adding workouts.',
+                'program' => 'Save a workout split before managing workouts.',
             ]);
         }
 
@@ -218,87 +190,44 @@ class ProgramController extends Controller
     }
 
     /**
-     * @return array{day: string, workout_name: string, workout_sets: int, workout_reps: int}
+     * @return array{day: string, name: string, focus: string|null, sets: int, reps_min: int, reps_max: int}
      */
     private function validatedWorkout(Request $request): array
     {
         $data = $request->validate([
             'day' => ['required', 'string'],
-            'workout_name' => ['required', 'string', 'max:120'],
-            'workout_sets' => ['required', 'integer', 'min:1', 'max:50'],
-            'workout_reps' => ['required', 'integer', 'min:1', 'max:100'],
+            'name' => ['required', 'string', 'max:120'],
+            'focus' => ['nullable', 'string', 'max:120'],
+            'sets' => ['required', 'integer', 'min:1', 'max:50'],
+            'reps_min' => ['required', 'integer', 'min:1', 'max:100', 'lte:reps_max'],
+            'reps_max' => ['required', 'integer', 'min:1', 'max:100', 'gte:reps_min'],
         ]);
 
         return [
             'day' => $data['day'],
-            'workout_name' => $data['workout_name'],
-            'workout_sets' => (int) $data['workout_sets'],
-            'workout_reps' => (int) $data['workout_reps'],
+            'name' => trim($data['name']),
+            'focus' => $this->nullableString($data['focus'] ?? null),
+            'sets' => (int) $data['sets'],
+            'reps_min' => (int) $data['reps_min'],
+            'reps_max' => (int) $data['reps_max'],
         ];
     }
 
-    private function authorizeWorkout(Workout $workout): void
-    {
-        abort_unless($workout->user_id === Auth::id(), 404);
-    }
-
     /**
-     * @return array<int, array<string, mixed>>
+     * @param  array<string, mixed>  $workout
+     * @return array<string, mixed>
      */
-    private function optionalWorkoutPayload(mixed $payload): array
+    private function workoutAttributes(array $workout): array
     {
-        if ($payload === null || $payload === '') {
-            return [];
-        }
-
-        $workouts = is_string($payload) ? json_decode($payload, true) : $payload;
-
-        if (! is_array($workouts)) {
-            throw ValidationException::withMessages([
-                'workouts' => 'Invalid workouts payload.',
-            ]);
-        }
-
-        return $workouts;
-    }
-
-    /**
-     * @return array<int, array{day: string, workout_name: string, workout_focus: string|null}>
-     */
-    private function preconfiguredWorkouts(string $split, string $schedule): array
-    {
-        $templates = config("preconfigured_workouts.{$split}", []);
-        $days = WorkoutSplitCatalog::daysFor($split, $schedule) ?? [];
-        $workouts = [];
-
-        foreach ($days as $weekday => $dayLabel) {
-            if ($dayLabel === 'Rest') {
-                continue;
-            }
-
-            foreach (($templates[$dayLabel] ?? []) as $template) {
-                $workouts[] = [
-                    'day' => $weekday,
-                    'workout_name' => (string) ($template['name'] ?? ''),
-                    'workout_focus' => $this->nullableString($template['focus'] ?? null),
-                ];
-            }
-        }
-
-        return $workouts;
-    }
-
-    private function positiveInt(mixed $value): int
-    {
-        $int = (int) $value;
-
-        if ($int < 1) {
-            throw ValidationException::withMessages([
-                'workouts' => 'Workout sets and reps must be positive numbers.',
-            ]);
-        }
-
-        return $int;
+        return [
+            'workout_day' => $workout['day'],
+            'workout_name' => trim($workout['name']),
+            'workout_focus' => $this->nullableString($workout['focus'] ?? null),
+            'workout_sets' => (int) $workout['sets'],
+            'reps_min' => (int) $workout['reps_min'],
+            'reps_max' => (int) $workout['reps_max'],
+            'position' => (int) $workout['position'],
+        ];
     }
 
     private function nullableString(mixed $value): ?string
@@ -319,7 +248,9 @@ class ProgramController extends Controller
             'workoutName' => $workout->workout_name,
             'workoutFocus' => $workout->workout_focus,
             'workoutSets' => $workout->workout_sets,
-            'workoutReps' => $workout->workout_reps,
+            'repsMin' => $workout->reps_min,
+            'repsMax' => $workout->reps_max,
+            'position' => $workout->position,
         ];
     }
 }

@@ -4,13 +4,13 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "concurrently -c \"#93c5fd,#c4b5fd\" \"php artisan serve --host=127.0.0.1\" \"vite --host 127.0.0.1\" --names=server,vite --kill-others",
+        "test:calculator": "node --test tests/js/calculator.test.mjs",
+        "vite": "vite --host 127.0.0.1"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
-        "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
     }
 }

@@ -2,8 +2,11 @@
 /.phpunit.result.cache
 /node_modules
 /public/build
+/public/hot
+/public/fonts-manifest.dev.json
 /storage/*.key
 /vendor
+.DS_Store
 .env
 .env.backup
 .env.production

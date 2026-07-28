@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'GreekGods | Register'])
 
 @push('styles')
-    <link rel="stylesheet" href="/files/register.css">
+    @vite('resources/css/pages/register.css')
 @endpush
 
 @section('content')
@@ -88,7 +88,7 @@
             </div>
 
             <div class="section">
-                <label for="activity" data-target="#bmr-activity">Activity<span src="/graphics/svg/info-black.svg"></span></label>
+                <label for="activity">Activity</label>
                 <select name="activity" id="activity" required>
                     <option value="" disabled selected></option>
                     <option value="sedentary" @selected(old('activity') === 'sedentary')>Sedentary: little or no exercise</option>
@@ -105,5 +105,5 @@
 @endsection
 
 @push('scripts')
-    <script src="/files/register.js"></script>
+    @vite('resources/js/pages/register.js')
 @endpush

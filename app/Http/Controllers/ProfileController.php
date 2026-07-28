@@ -51,8 +51,14 @@ class ProfileController extends Controller
         $today = now()->format('l');
         $workouts = $user->workouts()
             ->where('workout_day', $today)
-            ->orderBy('id')
-            ->get(['workout_name as workoutName', 'workout_focus as workoutFocus', 'workout_reps as workoutReps', 'workout_sets as workoutSets']);
+            ->orderBy('position')
+            ->get([
+                'workout_name as workoutName',
+                'workout_focus as workoutFocus',
+                'reps_min as workoutReps',
+                'reps_max as workoutRepsMax',
+                'workout_sets as workoutSets',
+            ]);
         $profile = $this->profilePayload($user);
 
         return view('profile.show', [

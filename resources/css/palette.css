@@ -1,0 +1,75 @@
+/*
+ * GreekGods color system
+ *
+ * Brand colors come from the monochrome logo, footer navy, and authentication
+ * blue. UI styles must consume the functional --gg-color-* aliases below
+ * instead of introducing page-specific colors.
+ *
+ * Approved percentage treatments:
+ * - soft brand/status backgrounds: 10%
+ * - selection and semantic borders: 24% / 25%
+ * - focus rings: 30%
+ * - disabled content: 45%
+ * - disabled controls: 50%
+ * - subtle/elevated shadows: 8% / 18%
+ * - modal overlays: 48%
+ * - solid text and actions: 100%
+ */
+
+:root {
+    color-scheme: light;
+
+    /* Primitive palette */
+    --gg-ink: #171717;
+    --gg-ink-rgb: 23 23 23;
+    --gg-navy: #15213e;
+    --gg-navy-rgb: 21 33 62;
+    --gg-blue: #2e59bc;
+    --gg-blue-rgb: 46 89 188;
+    --gg-blue-hover: #3668dd;
+    --gg-canvas: #f6f8f7;
+    --gg-white: #ffffff;
+    --gg-surface-muted: #f2f3f6;
+    --gg-text-muted: #626a65;
+    --gg-border: #d8deeb;
+    --gg-success: #28724f;
+    --gg-success-rgb: 40 114 79;
+    --gg-warning: #6e4d08;
+    --gg-warning-rgb: 110 77 8;
+    --gg-danger: #993c34;
+    --gg-danger-rgb: 153 60 52;
+
+    /* Functional aliases */
+    --gg-color-background: var(--gg-canvas);
+    --gg-color-surface: var(--gg-white);
+    --gg-color-surface-muted: var(--gg-surface-muted);
+    --gg-color-text: var(--gg-ink);
+    --gg-color-text-muted: var(--gg-text-muted);
+    --gg-color-border: var(--gg-border);
+    --gg-color-primary: var(--gg-navy);
+    --gg-color-primary-hover: var(--gg-blue);
+    --gg-color-action: var(--gg-blue);
+    --gg-color-action-hover: var(--gg-blue-hover);
+    --gg-color-on-dark: var(--gg-white);
+    --gg-color-info: var(--gg-blue);
+    --gg-color-success: var(--gg-success);
+    --gg-color-warning: var(--gg-warning);
+    --gg-color-danger: var(--gg-danger);
+
+    /* Approved opacity roles */
+    --gg-color-action-soft: rgb(var(--gg-blue-rgb) / 10%);
+    --gg-color-action-border: rgb(var(--gg-blue-rgb) / 24%);
+    --gg-color-focus-ring: rgb(var(--gg-blue-rgb) / 30%);
+    --gg-color-disabled-content: rgb(var(--gg-ink-rgb) / 45%);
+    --gg-color-disabled-control: rgb(var(--gg-blue-rgb) / 50%);
+    --gg-opacity-disabled-control: 50%;
+    --gg-color-shadow-subtle: rgb(var(--gg-ink-rgb) / 8%);
+    --gg-color-shadow-elevated: rgb(var(--gg-ink-rgb) / 18%);
+    --gg-color-overlay: rgb(var(--gg-ink-rgb) / 48%);
+    --gg-color-success-soft: rgb(var(--gg-success-rgb) / 10%);
+    --gg-color-success-border: rgb(var(--gg-success-rgb) / 25%);
+    --gg-color-warning-soft: rgb(var(--gg-warning-rgb) / 10%);
+    --gg-color-warning-border: rgb(var(--gg-warning-rgb) / 25%);
+    --gg-color-danger-soft: rgb(var(--gg-danger-rgb) / 10%);
+    --gg-color-danger-border: rgb(var(--gg-danger-rgb) / 25%);
+}

@@ -129,6 +129,36 @@ class WorkoutSplitCatalog
                     ],
                 ],
             ],
+            'anterior-posterior' => [
+                'label' => 'Anterior / Posterior',
+                'shortLabel' => 'A/P',
+                'description' => 'Alternate front-chain and back-chain sessions for balanced full-body frequency.',
+                'schedules' => [
+                    '4-day' => [
+                        'label' => '4 day schedule',
+                        'summary' => 'Balanced A/B rotation with recovery between repeated sessions.',
+                        'days' => self::week([
+                            'Monday' => 'Anterior A',
+                            'Tuesday' => 'Posterior A',
+                            'Thursday' => 'Anterior B',
+                            'Friday' => 'Posterior B',
+                        ]),
+                    ],
+                    '6-day' => [
+                        'label' => '6 day schedule · Advanced',
+                        'summary' => 'Higher-frequency A/B rotation with greater recovery demands.',
+                        'advanced' => true,
+                        'days' => self::week([
+                            'Monday' => 'Anterior A',
+                            'Tuesday' => 'Posterior A',
+                            'Wednesday' => 'Anterior B',
+                            'Thursday' => 'Posterior B',
+                            'Friday' => 'Anterior A',
+                            'Saturday' => 'Posterior A',
+                        ]),
+                    ],
+                ],
+            ],
         ];
     }
 

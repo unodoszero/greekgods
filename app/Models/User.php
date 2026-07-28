@@ -6,8 +6,9 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
@@ -55,8 +56,8 @@ class User extends Authenticatable
         return $this->hasMany(Program::class);
     }
 
-    public function workouts(): HasMany
+    public function workouts(): HasManyThrough
     {
-        return $this->hasMany(Workout::class);
+        return $this->hasManyThrough(Workout::class, Program::class);
     }
 }

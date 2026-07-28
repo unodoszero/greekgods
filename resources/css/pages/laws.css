@@ -1,0 +1,190 @@
+html, body {
+    height: 100%; 
+    margin: 0;    
+    font-family: Arial, sans-serif;
+    font: 500 1em/1.5em "Trebuchet MS";
+    text-align: justify;
+}
+
+body > .container {
+    display: flex;
+    flex-grow: 1;
+    height: 100vh; 
+}
+
+section {
+    width: 100%; 
+    background-color: var(--gg-color-surface-muted);
+    box-shadow: 2px 0 5px var(--gg-color-shadow-subtle);
+    overflow-y: auto; 
+    flex-shrink: 0; 
+    flex: 1 1 0;
+    padding: 10px 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+summary{
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--gg-color-text);
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.greekgods{
+    outline: none;
+    border: 0;
+    background-color: inherit;
+}
+
+.print-button {
+    background-color: var(--gg-color-action);
+    color: var(--gg-color-surface);
+    border: none;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 250px;
+    text-align: center;
+}
+
+.print-button:hover {
+    background-color: var(--gg-color-action-hover);
+}
+
+.print-button::after {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-left: 10px;
+    background: var(--gg-color-on-dark);
+    content: "";
+    mask: url("/graphics/svg/print.svg") center / contain no-repeat;
+}
+
+main {
+    flex-grow: 1;  
+    padding: 20px;
+    overflow-y: auto;
+    margin: 50px;
+}
+
+.date {
+    margin: 2px;
+    font: 500 0.845em/1.5em "Trebuchet MS";
+    text-align: right;
+    margin: 0 auto;
+    max-width: 1200px;
+    width: 100%;
+}
+
+section img {
+    width: 200px;
+    margin: 20px auto;
+    display: block;
+}
+
+section ul {
+    list-style: none;
+    padding: 0;
+}
+
+section ul li {
+    width: 100%;
+    text-align: center;
+}
+
+section ul li a {
+    text-decoration: none;
+    color: var(--gg-color-text);
+    cursor: pointer;
+    display: block;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+section ul li a:hover {
+    color: var(--gg-color-action);
+    text-decoration: underline;
+}
+
+main article {
+    margin: 30px auto 50px;
+    max-width: 1200px;
+    width: 100%;
+}
+
+main article h2 {
+    color: var(--gg-color-text);
+    border-bottom: 1px solid var(--gg-color-action);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+main article h2::after {
+    width: 15px;
+    height: 15px;
+    margin-top: 7px;
+    background: var(--gg-color-text);
+    content: "";
+    float: right;
+    cursor: pointer;
+    mask: url("/graphics/svg/go-back.svg") center / contain no-repeat;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+main article h2:hover::after {
+    background: var(--gg-color-action);
+    transform: scale(1.2);
+}
+
+
+@media screen and (max-width: 768px) {
+    section ul li {
+        flex: 1 1 calc(50% - 20px); /* 2 items per row on smaller screens */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    section ul li {
+        flex: 1 1 100%; /* 1 item per row on very small screens */
+    }
+}
+
+@media print {
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: auto;
+        background: var(--gg-color-surface);
+        color: var(--gg-color-text);
+    }
+
+    section, main {
+        padding: 10px;
+        width: 100%;
+        overflow: visible;
+        height: auto;
+    }
+
+    button, .print {
+        display: none; /* Hide the print button */
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    article, h2 {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

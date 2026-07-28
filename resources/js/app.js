@@ -24,7 +24,7 @@ const confirmStyles = `
         align-items: center;
         justify-content: center;
         padding: 18px;
-        background: rgba(24, 24, 21, 0.48);
+        background: var(--gg-color-overlay);
     }
 
     .gg-confirm[hidden] {
@@ -33,10 +33,10 @@ const confirmStyles = `
 
     .gg-confirm__dialog {
         width: min(420px, 100%);
-        border: 1px solid #e6e0d5;
+        border: 1px solid var(--gg-color-border);
         border-radius: 8px;
-        background: #ffffff;
-        box-shadow: 0 24px 70px rgba(24, 24, 21, 0.28);
+        background: var(--gg-color-surface);
+        box-shadow: 0 24px 70px var(--gg-color-shadow-elevated);
         font-family: Trebuchet MS, Arial, sans-serif;
         overflow: hidden;
     }
@@ -47,7 +47,7 @@ const confirmStyles = `
 
     .gg-confirm__title {
         margin: 0 0 10px;
-        color: #191918;
+        color: var(--gg-color-text);
         font-size: 1.1rem;
         font-weight: 900;
         line-height: 1.25;
@@ -55,7 +55,7 @@ const confirmStyles = `
 
     .gg-confirm__message {
         margin: 0;
-        color: #5f5c55;
+        color: var(--gg-color-text-muted);
         font-size: 0.96rem;
         font-weight: 700;
         line-height: 1.45;
@@ -66,8 +66,8 @@ const confirmStyles = `
         justify-content: flex-end;
         gap: 10px;
         padding: 14px 18px;
-        border-top: 1px solid #ebe6de;
-        background: #faf8f4;
+        border-top: 1px solid var(--gg-color-border);
+        background: var(--gg-color-surface-muted);
     }
 
     .gg-confirm__button {
@@ -84,21 +84,21 @@ const confirmStyles = `
     }
 
     .gg-confirm__button--cancel {
-        color: #252421;
-        background: #ece7df;
+        color: var(--gg-color-text);
+        background: var(--gg-color-surface-muted);
     }
 
     .gg-confirm__button--confirm {
-        color: #ffffff;
-        background: #245f3a;
+        color: var(--gg-color-on-dark);
+        background: var(--gg-color-primary);
     }
 
     .gg-confirm__button--danger {
-        background: #8f2c22;
+        background: var(--gg-color-danger);
     }
 
     .gg-confirm__button:focus-visible {
-        outline: 3px solid rgba(36, 95, 58, 0.25);
+        outline: 3px solid var(--gg-color-focus-ring);
         outline-offset: 2px;
     }
 `;

@@ -5,20 +5,11 @@
 ![PostgreSQL](https://img.shields.io/badge/DATABASE-POSTGRESQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Supabase](https://img.shields.io/badge/BACKEND-SUPABASE-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![Vite](https://img.shields.io/badge/BUILD-VITE-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/STYLES-TAILWIND_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Blade](https://img.shields.io/badge/VIEWS-BLADE-F7523F?style=for-the-badge&logo=laravel&logoColor=white)
 ![Vercel](https://img.shields.io/badge/DEPLOY-VERCEL-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![License](https://img.shields.io/badge/LICENSE-MIT-yellow?style=for-the-badge)
 
-GreekGods is a Laravel fitness planning application for creating weekly workout programs, managing personal body metrics, and estimating training-related nutrition targets. The project began as a PHP fitness website and was migrated into a Laravel application with Blade views, session authentication, PostgreSQL persistence, OAuth login, and Vercel deployment support.
-
-## Table of Contents
-
-- [Preview](#preview)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Usage](#usage)
-- [Constraints and Future Improvements](#constraints-and-future-improvements)
-- [License](#license)
+GreekGods is a Laravel fitness-planning application for creating weekly workout programs, managing body metrics, and estimating training-related nutrition targets. Laravel is the sole supported runtime: routes, authentication, validation, persistence, and server-rendered pages all live inside the framework.
 
 ## Preview
 
@@ -35,43 +26,107 @@ GreekGods is a Laravel fitness planning application for creating weekly workout 
 | <img src="public/preview/Blog%20Beginner.png" alt="GreekGods beginner blog article" width="360"> | Beginner-focused article page for learning core fitness concepts. |
 | <img src="public/preview/BMI%20Calculator.png" alt="GreekGods BMI calculator" width="360"> | BMI calculator page for estimating body composition category from height and weight. |
 
-## Tech Stack
+The screenshots are retained as historical previews and may not match every recent interface refinement.
 
-| Technology        | Role                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| PHP 8.3           | Main server-side language for the Laravel application and migration scripts.                                  |
-| Laravel 13        | Application framework for routing, controllers, validation, sessions, Eloquent models, migrations, and tests. |
-| Blade             | Server-rendered view layer for the app layout, auth screens, profile dashboard, and program builder.          |
-| JavaScript        | Powers interactive profile and workout-program behavior on the client side.                                   |
-| Tailwind CSS 4    | Styles the Laravel views, legacy pages, and Vite-managed frontend assets.                                     |
-| PostgreSQL        | Primary relational database for users, body metrics, programs, workouts, sessions, cache, and jobs.           |
-| Supabase          | Hosted PostgreSQL target used by the documented deployment setup.                                             |
-| Laravel Socialite | Google and Microsoft OAuth login, account linking, and social signup flow.                                    |
-| Vite              | Frontend build tool for compiling application CSS and JavaScript assets.                                      |
+## Tech stack
+
+| Technology | Role |
+| --- | --- |
+| PHP 8.3 / Laravel 13 | Routing, controllers, validation, authentication, Eloquent models, migrations, and tests |
+| Blade | Shared layouts, components, pages, authentication screens, and article rendering |
+| PostgreSQL / Supabase | Production relational data store |
+| SQLite | Fast local and automated test database |
+| Vanilla JavaScript | Program builder, profile interactions, calculator, dialogs, and toast integration |
+| CSS custom properties | Shared GreekGods palette and page-level responsive styling |
+| Vite | The only authored CSS and JavaScript build pipeline |
+| Laravel Socialite | Google and Microsoft OAuth login and account linking |
 
 ## Features
 
-- Email/password registration and login with Laravel session authentication.
-- Google and Microsoft OAuth login with account linking and a profile-completion step for new social signups.
-- Profile dashboard with height, weight, age, activity level, sex, BMI, BMR, TDEE, calorie targets, and protein estimates.
-- Metric conversion for height and weight across `cm`, `m`, `in`, `ft`, `kg`, and `lb`.
-- Workout split catalog covering full body, upper/lower, PPL, PPL/Upper/Lower, PPL/Upper/ShArms, Arnold, and body-part splits.
-- Weekly program builder with schedule selection, preconfigured workout templates, editable workouts, and rest-day restrictions.
-- Legacy URL redirects for previous `/files/*.php`, `/files/*.html`, `/articles/*.php`, and `index.php` routes.
-- Supabase PostgreSQL configuration and Vercel deployment support.
+- Email/password and Google/Microsoft authentication.
+- Profile dashboard with body metrics and calculated fitness estimates.
+- Guided two-step Program builder with reusable workout split templates.
+- Atomic program replacement and authenticated workout CRUD.
+- Horizontal seven-day workout navigation with compact landscape recovery cards.
+- Browser-local BMI, BMR, TDEE, calorie-target, and protein calculator.
+- Data-driven Blog catalog and one structured article renderer.
+- Accessible confirmation dialogs and application-wide mutation toasts.
+- Historical URL redirects for the removed PHP/HTML application.
 
-## Usage
+## Local setup
 
-To use the web app navigate to the repository 'about' panel and click the link.
+Requirements: PHP 8.3+, Composer, Node.js, npm, and the PHP extensions required by Laravel.
 
-## Constraints and Future Improvements
+```bash
+git clone <repository-url>
+cd greekgods
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm run build
+```
 
-- Some legacy PHP, CSS, and JavaScript assets remain in the repository while the Laravel migration is in progress.
-- The preview images are stored as static screenshots rather than generated from an automated visual test workflow.
-- Workout recommendations are rule/template based; future versions could support progression history, set completion tracking, and analytics.
-- The current database target is PostgreSQL/Supabase; local SQLite setup is not the primary documented path.
-- Additional tests would improve confidence around social auth edge cases, profile metric validation, and workout schedule constraints.
-- CI/CD could be added to run tests, formatting, and build checks before deployment.
+For a simple local setup, configure SQLite in `.env`. PostgreSQL environment variables can be used for Supabase or another production-compatible database.
+
+Start Laravel and Vite together:
+
+```bash
+npm run dev
+```
+
+Open `http://127.0.0.1:8000`. The Vite URL on port 5173 serves frontend assets and is not the application page by itself.
+
+## Development and verification
+
+```bash
+php artisan test
+npm run test:calculator
+npm run build
+php artisan route:list
+php artisan view:cache
+php artisan view:clear
+```
+
+The repository deliberately keeps generated Vite output, compiled Blade views, sessions, logs, and local secrets out of version control.
+
+## Repository structure
+
+```text
+app/
+  Content/                Article catalog access
+  Http/                   Controllers and request validation
+  Models/                 Eloquent models
+  Support/                Workout catalog and shared domain support
+database/
+  migrations/             Laravel schema history
+  factories/              Test data factories
+resources/
+  content/                Structured article data
+  css/                    Shared palette/site CSS and page modules
+  js/                     Shared runtime and page modules
+  views/                  Blade layouts, components, pages, and articles
+public/
+  graphics/               Deployable images and interface assets
+  fonts/                  Deployable local fonts
+routes/
+  web.php                 Canonical routes and historical redirects
+tests/
+  Feature/                Laravel behavior and repository checks
+  js/                     Calculator unit tests
+```
+
+Authored frontend files belong in `resources`, never in a mirrored root or `public/files` source tree. `public` is reserved for deployable static media and Vite build output.
+
+## Migration status and editorial follow-up
+
+The previous standalone PHP runtime, database helpers, duplicated source/public assets, and one-time MySQL-to-PostgreSQL scripts have been removed. Legacy URLs continue to redirect through Laravel.
+
+The article catalog intentionally preserves the previous prose. Two known editorial issues remain separate from this structural cleanup:
+
+- `workout-splits` currently duplicates BMR-oriented content.
+- `bmr-vs-tdee` is incomplete.
 
 ## License
 

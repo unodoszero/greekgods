@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'GreekGods | Profile'])
 
 @push('styles')
-    <link rel="stylesheet" href="/files/profile.css">
+    @vite(['resources/css/site.css', 'resources/css/pages/profile.css'])
 @endpush
 
 @php
@@ -20,27 +20,7 @@
         const userData = profileState.user;
     </script>
 
-    <nav>
-        <button class="nav-menu-button" id="nav-menu-button" type="button">
-            <img src="/graphics/svg/menu-black.svg" alt="Menu" title="Menu">
-        </button>
-        <div class="nav-logo">
-            <img src="/graphics/logo/greekgodslogo.png" alt="GreekGods" title="GreekGods" onclick="window.location.href='/'">
-        </div>
-        <button class="nav-menu-profile" id="nav-menu-profile" type="button" onclick="window.location.href='/profile'">
-            <img src="/graphics/svg/profile.svg" alt="Profile" title="Profile">
-        </button>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="/">HOME</a></li>
-            <li><a href="/program">PROGRAM</a></li>
-            <li><a href="/blog">BLOG</a></li>
-            <li><a href="/calculator">CALCULATOR</a></li>
-            <li><a href="/about">ABOUT</a></li>
-        </ul>
-        <div class="nav-button">
-            <button id="logout" type="button">LOGOUT</button>
-        </div>
-    </nav>
+    <x-site-nav :show-logout="true" />
 
     <main class="profile-shell">
         <section class="profile-hero" aria-labelledby="profile-title">
@@ -172,7 +152,7 @@
                                         <td>{{ $workout->workoutFocus ?? '--' }}</td>
                                         <td>
                                             @if ($workout->workoutSets && $workout->workoutReps)
-                                                {{ $workout->workoutSets }} x {{ $workout->workoutReps }}
+                                                {{ $workout->workoutSets }} x {{ $workout->workoutReps }}{{ (int) $workout->workoutRepsMax !== (int) $workout->workoutReps ? '–'.$workout->workoutRepsMax : '' }}
                                             @else
                                                 --
                                             @endif
@@ -350,6 +330,5 @@
 @endsection
 
 @push('scripts')
-    <script src="/index.js"></script>
-    <script src="/files/profile.js"></script>
+    @vite(['resources/js/site.js', 'resources/js/pages/profile.js'])
 @endpush

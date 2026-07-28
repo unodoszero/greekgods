@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'GreekGods | Complete Profile'])
 
 @push('styles')
-    <link rel="stylesheet" href="/files/register.css">
+    @vite('resources/css/pages/register.css')
 @endpush
 
 @section('content')

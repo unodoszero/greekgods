@@ -1,7 +1,7 @@
 @extends('layouts.app', ['title' => 'GreekGods | Login'])
 
 @push('styles')
-    <link rel="stylesheet" href="/files/login.css">
+    @vite('resources/css/pages/login.css')
 @endpush
 
 @section('content')
@@ -39,5 +39,5 @@
 @endsection
 
 @push('scripts')
-    <script src="/files/login.js"></script>
+    @vite('resources/js/pages/login.js')
 @endpush

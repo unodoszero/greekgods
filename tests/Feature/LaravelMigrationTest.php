@@ -43,11 +43,12 @@ class LaravelMigrationTest extends TestCase
         $this->get('/calculator')
             ->assertOk()
             ->assertSee('id="toaster"', false)
-            ->assertSee('/files/calculator.js', false);
+            ->assertSee('id="calculator-form"', false)
+            ->assertSee('id="calculator-results" hidden', false)
+            ->assertSee('For adults aged 18–100.', false);
         $this->get('/laws')
             ->assertOk()
-            ->assertSee('id="toaster"', false)
-            ->assertSee('/files/laws.js', false);
+            ->assertSee('id="toaster"', false);
         $this->get('/files/about')->assertRedirect('/about');
         $this->get('/files//about')->assertRedirect('/about');
         $this->get('/articles/bmi.php')->assertRedirect('/articles/bmi');
@@ -63,6 +64,7 @@ class LaravelMigrationTest extends TestCase
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
 
         $this->assertIsString($layout);
+        $this->assertStringContainsString("@vite('resources/css/palette.css')", $layout);
         $this->assertStringContainsString('@livewireStyles', $layout);
         $this->assertStringContainsString('<x-toaster-hub />', $layout);
         $this->assertStringContainsString("@vite('resources/js/app.js')", $layout);
@@ -79,9 +81,49 @@ class LaravelMigrationTest extends TestCase
         $this->assertStringContainsString('window.GreekGodsConfirm', $appJs);
     }
 
+    public function test_active_app_uses_the_shared_palette_without_page_specific_colors(): void
+    {
+        $palette = file_get_contents(resource_path('css/palette.css'));
+
+        $this->assertIsString($palette);
+        $this->assertStringContainsString('--gg-color-primary:', $palette);
+        $this->assertStringContainsString('--gg-color-action-soft:', $palette);
+        $this->assertStringContainsString('--gg-color-overlay:', $palette);
+
+        foreach (['/', '/about', '/blog', '/calculator', '/laws', '/articles/bmi', '/login', '/register'] as $path) {
+            $this->get($path)->assertOk();
+        }
+
+        $user = $this->createUser(['email' => 'palette@gmail.com']);
+        $this->actingAs($user)->get('/profile')->assertOk();
+        $this->actingAs($user)->get('/program')->assertOk();
+
+        $activeStylePaths = [
+            resource_path('css/site.css'),
+            ...glob(resource_path('css/pages/*.css')) ?: [],
+            resource_path('js/app.js'),
+            resource_path('views/vendor/toaster/hub.blade.php'),
+        ];
+
+        foreach ($activeStylePaths as $stylePath) {
+            $contents = file_get_contents($stylePath);
+
+            $this->assertIsString($contents);
+            $this->assertDoesNotMatchRegularExpression(
+                '/#[0-9a-f]{3,8}\b|(?:rgb|hsl)a?\s*\(/i',
+                $contents,
+                basename($stylePath).' must consume shared palette tokens instead of hard-coded colors.'
+            );
+        }
+    }
+
     public function test_active_public_scripts_do_not_use_native_browser_dialogs(): void
     {
-        $scriptPaths = glob(public_path('files/*.js')) ?: [];
+        $scriptPaths = [
+            resource_path('js/site.js'),
+            ...glob(resource_path('js/pages/*.js')) ?: [],
+            ...glob(resource_path('js/pages/calculator/*.js')) ?: [],
+        ];
 
         $this->assertNotEmpty($scriptPaths);
 
@@ -97,15 +139,56 @@ class LaravelMigrationTest extends TestCase
         }
     }
 
-    public function test_program_script_uses_optimistic_destructive_updates(): void
+    public function test_program_script_uses_draft_and_pending_states(): void
     {
-        $script = file_get_contents(public_path('files/program.js'));
+        $script = file_get_contents(resource_path('js/pages/program.js'));
+        $styles = file_get_contents(resource_path('css/pages/program.css'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('previousState', $script);
-        $this->assertStringContainsString('previousWorkouts', $script);
+        $this->assertIsString($styles);
+        $this->assertStringContainsString('draftWorkouts', $script);
+        $this->assertStringContainsString('savedWorkouts', $script);
+        $this->assertStringContainsString('allowDraftReset', $script);
         $this->assertStringContainsString('setPending(true)', $script);
-        $this->assertStringContainsString('Saving changes...', $script);
+        $this->assertStringContainsString('workouts: draftWorkouts.map', $script);
+        $this->assertStringContainsString('document.querySelectorAll("[data-builder-chrome]")', $script);
+        $this->assertStringContainsString('renderGuide()', $script);
+        $this->assertStringContainsString('bindCarousels()', $script);
+        $this->assertStringContainsString('visibleCarouselRange', $script);
+        $this->assertStringContainsString('document.createElementNS("http://www.w3.org/2000/svg", "svg")', $script);
+        $this->assertStringContainsString('grid-template-columns: repeat(4, minmax(0, 1fr))', $styles);
+        $this->assertStringContainsString('var(--gg-color-primary)', $styles);
+        $this->assertStringContainsString('var(--gg-color-action)', $styles);
+        $this->assertStringNotContainsString('--program-blue', $styles);
+        $this->assertStringContainsString('.weekly-board {', $styles);
+        $this->assertStringContainsString('padding: 2px 2px 14px', $styles);
+        $this->assertStringContainsString('scrollbar-color: var(--gg-color-primary)', $styles);
+        $this->assertStringContainsString('border-style: dashed', $styles);
+        $this->assertStringContainsString('letter-spacing: .1em', $styles);
+        $this->assertStringContainsString('overflow-x: auto', $styles);
+        $this->assertStringContainsString('scroll-snap-type: inline mandatory', $styles);
+        $this->assertStringContainsString('flex-basis: clamp(165px, 16vw, 190px)', $styles);
+        $this->assertStringContainsString('.day-card.is-rest {'.PHP_EOL.'    min-height: 250px', $styles);
+        $this->assertStringContainsString('writing-mode: vertical-rl', $styles);
+    }
+
+    public function test_calculator_uses_guarded_modular_calculations(): void
+    {
+        $sourceScript = file_get_contents(resource_path('js/pages/calculator/index.js'));
+        $sourceCore = file_get_contents(resource_path('js/pages/calculator/core.js'));
+        $sourceStyles = file_get_contents(resource_path('css/pages/calculator.css'));
+
+        $this->assertIsString($sourceScript);
+        $this->assertIsString($sourceCore);
+        $this->assertIsString($sourceStyles);
+
+        $this->assertStringContainsString('calculateCalorieTargets', $sourceCore);
+        $this->assertStringContainsString('calories < minimumCalories', $sourceCore);
+        $this->assertStringContainsString('if (bmi < 25)', $sourceCore);
+        $this->assertStringContainsString('results.hidden = false', $sourceScript);
+        $this->assertStringContainsString('resultsHeading.focus', $sourceScript);
+        $this->assertStringContainsString('var(--gg-color-primary)', $sourceStyles);
+        $this->assertStringContainsString('grid-template-columns: repeat(2, minmax(0, 1fr))', $sourceStyles);
     }
 
     public function test_profile_routes_require_authentication(): void
@@ -130,11 +213,9 @@ class LaravelMigrationTest extends TestCase
     {
         $this->get('/about')
             ->assertOk()
-            ->assertSee('const userId = null;', false)
-            ->assertSee('const userFullName = "";', false)
-            ->assertSee('<button id="register-button" onclick="window.location.href=\'/register\'">GET STARTED</button>', false)
-            ->assertSee('<button id="profile-button" onclick="window.location.href=\'/profile\'" hidden style="display: none;">', false)
-            ->assertSee('<span id="profile-name" hidden style="display: none;"></span>', false);
+            ->assertSee('<a id="register-button" href="/register">GET STARTED</a>', false)
+            ->assertDontSee('id="profile-button"', false)
+            ->assertDontSee('id="profile-name"', false);
     }
 
     public function test_authenticated_nav_shows_clickable_user_name_on_public_pages(): void
@@ -146,26 +227,15 @@ class LaravelMigrationTest extends TestCase
         ]);
 
         foreach (['/', '/about', '/blog', '/calculator'] as $path) {
-            $this->withSession([
-                AuthSessionIdentity::USER_ID => $user->id,
-                AuthSessionIdentity::FULL_NAME => 'Nav User',
-                AuthSessionIdentity::FIRST_NAME => 'Nav',
-            ])
+            $this->actingAs($user)
                 ->get($path)
                 ->assertOk()
-                ->assertSee('const userId = '.$user->id.';', false)
-                ->assertSee('const userFullName = "Nav User";', false)
-                ->assertSee('<button id="register-button"', false)
-                ->assertSee('hidden style="display: none;">GET STARTED</button>', false)
-                ->assertSee('<button id="profile-button" onclick="window.location.href=\'/profile\'" style="display: inline-flex;" aria-label="Open profile">', false)
-                ->assertSee('<span id="profile-name" style="display: inline;">Nav User</span>', false);
+                ->assertSee('<a id="profile-button" href="/profile" aria-label="Open profile">', false)
+                ->assertSee('<a id="profile-name" href="/profile">Nav User</a>', false)
+                ->assertDontSee('GET STARTED');
         }
 
-        $this->withSession([
-            AuthSessionIdentity::USER_ID => $user->id,
-            AuthSessionIdentity::FULL_NAME => 'Nav User',
-            AuthSessionIdentity::FIRST_NAME => 'Nav',
-        ])
+        $this->actingAs($user)
             ->get('/laws')
             ->assertOk()
             ->assertDontSee('GET STARTED');
@@ -174,20 +244,14 @@ class LaravelMigrationTest extends TestCase
             ->get('/program')
             ->assertOk()
             ->assertSee('const userFullName = "Nav User";', false)
-            ->assertSee('<button id="profile-button" style="display: inline-flex;" aria-label="Open profile" onclick="window.location.href=\'/profile\'">', false)
-            ->assertSee('<span id="profile-name" style="display: inline;">Nav User</span>', false);
+            ->assertSee('<a id="profile-button" href="/profile" aria-label="Open profile">', false)
+            ->assertSee('<a id="profile-name" href="/profile">Nav User</a>', false);
 
-        $navScript = file_get_contents(base_path('index.js'));
-        $publicNavScript = file_get_contents(public_path('index.js'));
-        $navStyles = file_get_contents(base_path('index.css'));
-        $publicNavStyles = file_get_contents(public_path('index.css'));
+        $navScript = file_get_contents(resource_path('js/site.js'));
+        $navStyles = file_get_contents(resource_path('css/site.css'));
 
         $this->assertIsString($navScript);
-        $this->assertIsString($publicNavScript);
-        $this->assertSame($navScript, $publicNavScript);
         $this->assertIsString($navStyles);
-        $this->assertIsString($publicNavStyles);
-        $this->assertSame($navStyles, $publicNavStyles);
         $this->assertStringNotContainsString('navButton.textContent = fullName', $navScript);
         $this->assertStringNotContainsString('navButton.style.display', $navScript);
         $this->assertStringNotContainsString('navProfile.style.display', $navScript);
@@ -912,81 +976,77 @@ class LaravelMigrationTest extends TestCase
 
     public function test_authenticated_user_can_save_program_then_manage_workouts(): void
     {
-        $user = User::create([
-            'email' => 'grace@example.com',
-            'password' => 'Password!123',
-            'first_name' => 'Grace',
-            'last_name' => 'Hopper',
-            'birthdate' => '1988-01-01',
-            'height' => 1.65,
-            'weight' => 60,
-            'activity' => 'active',
-        ]);
+        $user = $this->createUser(['email' => 'grace@example.com']);
+        $payload = [
+            'split' => 'anterior-posterior',
+            'schedule' => '4-day',
+            'workouts' => [
+                [
+                    'day' => 'Monday',
+                    'name' => 'Bench Press',
+                    'focus' => 'Chest',
+                    'sets' => 3,
+                    'reps_min' => 8,
+                    'reps_max' => 12,
+                    'position' => 0,
+                ],
+                [
+                    'day' => 'Tuesday',
+                    'name' => 'Romanian Deadlift',
+                    'focus' => 'Hamstrings',
+                    'sets' => 3,
+                    'reps_min' => 6,
+                    'reps_max' => 10,
+                    'position' => 1,
+                ],
+            ],
+        ];
 
-        $this->actingAs($user)
-            ->post('/program', [
-                'split' => 'full-body',
-                'schedule' => '3-day-eod',
-            ])
+        $response = $this->actingAs($user)
+            ->postJson('/program', $payload)
             ->assertOk()
             ->assertJson(['success' => true])
-            ->assertJsonPath('message', 'Program saved. Preconfigured workouts added.')
-            ->assertJsonCount(18, 'workouts')
-            ->assertJsonPath('workouts.0.workoutSets', null)
-            ->assertJsonPath('workouts.0.workoutReps', null);
+            ->assertJsonPath('message', 'Program saved.')
+            ->assertJsonCount(2, 'workouts')
+            ->assertJsonPath('workouts.0.repsMin', 8)
+            ->assertJsonPath('workouts.0.repsMax', 12);
 
-        $this->assertDatabaseHas('programs', [
-            'user_id' => $user->id,
-            'program' => 'full-body',
-            'schedule' => '3-day-eod',
-        ]);
+        $programId = $response->json('program.id');
         $this->assertDatabaseHas('workouts', [
-            'user_id' => $user->id,
+            'program_id' => $programId,
             'workout_day' => 'Monday',
-            'workout_name' => 'Incline Bench Press',
+            'workout_name' => 'Bench Press',
             'workout_focus' => 'Chest',
-            'workout_sets' => null,
-            'workout_reps' => null,
+            'workout_sets' => 3,
+            'reps_min' => 8,
+            'reps_max' => 12,
         ]);
 
         $addResponse = $this->actingAs($user)
             ->postJson('/program/workouts', [
                 'day' => 'Monday',
-                'workout_name' => 'Bench Press',
-                'workout_sets' => 3,
-                'workout_reps' => 10,
+                'name' => 'Incline Press',
+                'focus' => 'Upper Chest',
+                'sets' => 3,
+                'reps_min' => 8,
+                'reps_max' => 12,
             ])
             ->assertOk()
-            ->assertJsonPath('message', 'Workout added.')
-            ->assertJsonPath('workout.workoutDay', 'Monday')
-            ->assertJsonPath('workout.workoutName', 'Bench Press');
+            ->assertJsonPath('workout.workoutName', 'Incline Press');
 
         $workoutId = $addResponse->json('workout.id');
-        $this->assertDatabaseHas('workouts', [
-            'id' => $workoutId,
-            'user_id' => $user->id,
-            'workout_name' => 'Bench Press',
-            'workout_sets' => 3,
-            'workout_reps' => 10,
-        ]);
 
         $this->actingAs($user)
             ->patchJson("/program/workouts/{$workoutId}", [
-                'day' => 'Wednesday',
-                'workout_name' => 'Incline Bench Press',
-                'workout_sets' => 4,
-                'workout_reps' => 8,
+                'day' => 'Thursday',
+                'name' => 'Incline Bench Press',
+                'focus' => 'Upper Chest',
+                'sets' => 4,
+                'reps_min' => 8,
+                'reps_max' => 10,
             ])
             ->assertOk()
-            ->assertJsonPath('message', 'Workout updated.')
-            ->assertJsonPath('workout.workoutDay', 'Wednesday')
-            ->assertJsonPath('workout.workoutName', 'Incline Bench Press');
-
-        $this->assertDatabaseHas('workouts', [
-            'id' => $workoutId,
-            'workout_day' => 'Wednesday',
-            'workout_name' => 'Incline Bench Press',
-        ]);
+            ->assertJsonPath('workout.workoutDay', 'Thursday');
 
         $this->actingAs($user)
             ->deleteJson("/program/workouts/{$workoutId}")
@@ -997,64 +1057,33 @@ class LaravelMigrationTest extends TestCase
         $this->assertDatabaseMissing('workouts', ['id' => $workoutId]);
 
         $this->actingAs($user)
-            ->postJson('/program/workouts', [
-                'day' => 'Friday',
-                'workout_name' => 'Squat',
-                'workout_sets' => 5,
-                'workout_reps' => 5,
-            ])
-            ->assertOk()
-            ->assertJsonPath('message', 'Workout added.');
-
-        $this->actingAs($user)
             ->delete('/program')
             ->assertOk()
             ->assertJson(['success' => true])
-            ->assertJsonPath('message', 'Program and workouts deleted successfully');
+            ->assertJsonPath('message', 'Program removed.');
         $this->assertDatabaseMissing('programs', ['user_id' => $user->id]);
-        $this->assertDatabaseMissing('workouts', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing('workouts', ['program_id' => $programId]);
     }
 
-    public function test_ppl_upper_sharms_program_seeds_user_template_without_metrics(): void
+    public function test_anterior_posterior_catalog_has_balanced_four_and_six_day_templates(): void
     {
-        $user = $this->createUser(['email' => 'sharmsprogram@gmail.com']);
+        $split = WorkoutSplitCatalog::all()['anterior-posterior'];
+        $templates = config('preconfigured_workouts.anterior-posterior');
 
-        $this->actingAs($user)
-            ->postJson('/program', [
-                'split' => 'ppl-upper-sharms',
-                'schedule' => '5-day',
-            ])
-            ->assertOk()
-            ->assertJsonPath('program.split', 'ppl-upper-sharms')
-            ->assertJsonPath('message', 'Program saved. Preconfigured workouts added.')
-            ->assertJsonCount(30, 'workouts')
-            ->assertJsonPath('workouts.0.workoutDay', 'Monday')
-            ->assertJsonPath('workouts.0.workoutName', 'Smith Machine Incline Bench Press')
-            ->assertJsonPath('workouts.0.workoutFocus', 'Upper Chest')
-            ->assertJsonPath('workouts.0.workoutSets', null)
-            ->assertJsonPath('workouts.0.workoutReps', null);
+        $this->assertSame('Anterior A', $split['schedules']['4-day']['days']['Monday']);
+        $this->assertSame('Posterior B', $split['schedules']['4-day']['days']['Friday']);
+        $this->assertTrue($split['schedules']['6-day']['advanced']);
+        $this->assertSame('Anterior A', $split['schedules']['6-day']['days']['Friday']);
+        $this->assertSame('Posterior A', $split['schedules']['6-day']['days']['Saturday']);
 
-        $this->assertDatabaseHas('programs', [
-            'user_id' => $user->id,
-            'program' => 'ppl-upper-sharms',
-            'schedule' => '5-day',
-        ]);
-        $this->assertDatabaseHas('workouts', [
-            'user_id' => $user->id,
-            'workout_day' => 'Saturday',
-            'workout_name' => 'Shoulder Press',
-            'workout_focus' => 'Front Delt',
-            'workout_sets' => null,
-            'workout_reps' => null,
-        ]);
-        $this->assertDatabaseHas('workouts', [
-            'user_id' => $user->id,
-            'workout_day' => 'Wednesday',
-            'workout_name' => 'Supported Leg Raise',
-            'workout_focus' => 'Lower Abs',
-            'workout_sets' => null,
-            'workout_reps' => null,
-        ]);
+        foreach (['Anterior A', 'Anterior B', 'Posterior A', 'Posterior B'] as $label) {
+            $this->assertNotEmpty($templates[$label]);
+            foreach ($templates[$label] as $workout) {
+                $this->assertGreaterThan(0, $workout['sets']);
+                $this->assertGreaterThan(0, $workout['reps_min']);
+                $this->assertGreaterThanOrEqual($workout['reps_min'], $workout['reps_max']);
+            }
+        }
     }
 
     public function test_every_training_day_has_preconfigured_template_data(): void
@@ -1085,81 +1114,103 @@ class LaravelMigrationTest extends TestCase
     public function test_program_rejects_invalid_schedules_and_rest_day_workouts(): void
     {
         $user = $this->createUser(['email' => 'programrules@gmail.com']);
+        $validWorkout = [
+            'day' => 'Monday',
+            'name' => 'Bench Press',
+            'focus' => 'Chest',
+            'sets' => 3,
+            'reps_min' => 8,
+            'reps_max' => 12,
+            'position' => 0,
+        ];
 
         $this->actingAs($user)
             ->postJson('/program', [
                 'split' => 'not-a-split',
                 'schedule' => '3-day',
+                'workouts' => [$validWorkout],
             ])
             ->assertStatus(422);
 
         $this->actingAs($user)
             ->postJson('/program/workouts', [
                 'day' => 'Monday',
-                'workout_name' => 'Bench Press',
-                'workout_sets' => 3,
-                'workout_reps' => 10,
+                'name' => 'Bench Press',
+                'sets' => 3,
+                'reps_min' => 8,
+                'reps_max' => 12,
             ])
             ->assertStatus(422);
 
-        $this->actingAs($user)
+        $saved = $this->actingAs($user)
             ->postJson('/program', [
                 'split' => 'full-body',
                 'schedule' => '2-day',
+                'workouts' => [$validWorkout],
             ])
             ->assertOk();
 
         $this->actingAs($user)
             ->postJson('/program/workouts', [
                 'day' => 'Monday',
-                'workout_name' => 'Bench Press',
+                'name' => 'Bench Press',
             ])
             ->assertStatus(422);
 
-        $workout = $user->workouts()->create([
-            'workout_day' => 'Monday',
-            'workout_name' => 'Bench Press',
-            'workout_sets' => 3,
-            'workout_reps' => 10,
-        ]);
+        $workoutId = $saved->json('workouts.0.id');
 
         $this->actingAs($user)
-            ->patchJson("/program/workouts/{$workout->id}", [
+            ->patchJson("/program/workouts/{$workoutId}", [
                 'day' => 'Monday',
-                'workout_name' => 'Incline Bench Press',
-                'workout_sets' => 4,
+                'name' => 'Incline Bench Press',
+                'sets' => 4,
             ])
             ->assertStatus(422);
 
         $this->actingAs($user)
             ->postJson('/program/workouts', [
                 'day' => 'Tuesday',
-                'workout_name' => 'Bench Press',
-                'workout_sets' => 3,
-                'workout_reps' => 10,
+                'name' => 'Bench Press',
+                'sets' => 3,
+                'reps_min' => 8,
+                'reps_max' => 12,
             ])
             ->assertStatus(422);
 
         $otherUser = $this->createUser(['email' => 'otherprogramowner@gmail.com']);
-        $otherWorkout = $otherUser->workouts()->create([
-            'workout_day' => 'Monday',
-            'workout_name' => 'Private Row',
-            'workout_sets' => 3,
-            'workout_reps' => 10,
-        ]);
+        $otherResponse = $this->actingAs($otherUser)->postJson('/program', [
+            'split' => 'full-body',
+            'schedule' => '2-day',
+            'workouts' => [[...$validWorkout, 'name' => 'Private Row']],
+        ])->assertOk();
+        $otherWorkoutId = $otherResponse->json('workouts.0.id');
 
         $this->actingAs($user)
-            ->deleteJson("/program/workouts/{$otherWorkout->id}")
+            ->deleteJson("/program/workouts/{$otherWorkoutId}")
             ->assertNotFound();
 
         $this->assertDatabaseHas('workouts', [
-            'id' => $otherWorkout->id,
-            'user_id' => $otherUser->id,
+            'id' => $otherWorkoutId,
+            'program_id' => $otherResponse->json('program.id'),
         ]);
 
         $this->actingAs($user)
             ->deleteJson('/program/workouts/999999')
             ->assertNotFound();
+
+        $this->actingAs($user)
+            ->postJson('/program', [
+                'split' => 'full-body',
+                'schedule' => '2-day',
+                'workouts' => [[...$validWorkout, 'reps_min' => 15, 'reps_max' => 8]],
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'program' => 'full-body',
+            'schedule' => '2-day',
+        ]);
     }
 
     /**

@@ -1,6 +1,5 @@
 <?php $__env->startPush('styles'); ?>
-    <link rel="stylesheet" href="/index.css">
-    <link rel="stylesheet" href="/files/program.css">
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/site.css', 'resources/css/pages/program.css']); ?>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -8,123 +7,178 @@
         const userId = <?php echo json_encode($user->id, 15, 512) ?>;
         const userFullName = <?php echo json_encode(trim($user->first_name.' '.$user->last_name), 15, 512) ?>;
         const splitCatalog = <?php echo json_encode($splitCatalog, 15, 512) ?>;
-        const workoutData = <?php echo json_encode($workouts, 15, 512) ?>;
+        const workoutTemplates = <?php echo json_encode($workoutTemplates, 15, 512) ?>;
         const programState = <?php echo json_encode(['program' => $programState, 'workouts' => $workouts], 512) ?>;
     </script>
 
-    <nav>
-        <button class="nav-menu-button" id="nav-menu-button"><img src="/graphics/svg/menu-black.svg" alt="Menu" title="Menu"></button>
-        <div class="nav-logo"><img src="/graphics/logo/greekgodslogo.png" alt="GreekGods" title="GreekGods" onclick="window.location.href='/'"></div>
-        <button class="nav-menu-profile" id="nav-menu-profile" onclick="window.location.href='/profile'"><img src="/graphics/svg/profile.svg" alt="Profile" title="Profile"></button>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="/">HOME</a></li>
-            <li><a href="/program">PROGRAM</a></li>
-            <li><a href="/blog">BLOG</a></li>
-            <li><a href="/calculator">CALCULATOR</a></li>
-            <li><a href="/about">ABOUT</a></li>
-        </ul>
-        <div class="nav-button">
-            <button id="profile-button" style="display: inline-flex;" aria-label="Open profile" onclick="window.location.href='/profile'"><img src="/graphics/svg/profile.svg" alt="Profile" title="Profile"></button>
-            <span id="profile-name" style="display: inline;"><?php echo e($user->first_name); ?> <?php echo e($user->last_name); ?></span>
-        </div>
-    </nav>
+    <?php if (isset($component)) { $__componentOriginal6c6dd16398ff8c09001248acb0dea1d2 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal6c6dd16398ff8c09001248acb0dea1d2 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.site-nav','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('site-nav'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
 
-    <header class="program-hero">
-        <div class="header-container">
-            <div class="header-sections">
-                <p class="eyebrow">Program builder</p>
-                <h1 id="header-welcome-message">HI, <?php echo e($user->first_name); ?>!</h1>
-                <p>Choose a split, save the schedule, then build each training day.</p>
-            </div>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal6c6dd16398ff8c09001248acb0dea1d2)): ?>
+<?php $attributes = $__attributesOriginal6c6dd16398ff8c09001248acb0dea1d2; ?>
+<?php unset($__attributesOriginal6c6dd16398ff8c09001248acb0dea1d2); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal6c6dd16398ff8c09001248acb0dea1d2)): ?>
+<?php $component = $__componentOriginal6c6dd16398ff8c09001248acb0dea1d2; ?>
+<?php unset($__componentOriginal6c6dd16398ff8c09001248acb0dea1d2); ?>
+<?php endif; ?>
+
+    <header class="program-hero" data-builder-chrome>
+        <div class="program-shell">
+            <p class="eyebrow">Program builder</p>
+            <h1>Build your training week.</h1>
+            <p>Choose a structure, tailor every session, and keep your week easy to scan.</p>
         </div>
     </header>
 
-    <section class="program-builder" aria-labelledby="program-builder-title">
-        <div class="builder-heading">
+    <main class="program-shell program-main">
+        <ol class="stepper" aria-label="Program setup progress" data-builder-chrome>
+            <li data-step-indicator="selection"><span>1</span><strong>Split & schedule</strong></li>
+            <li data-step-indicator="draft"><span>2</span><strong>Edit workouts</strong></li>
+            <li data-step-indicator="summary"><span>3</span><strong>Your program</strong></li>
+        </ol>
+
+        <aside class="workflow-guide" id="workflow-guide" aria-labelledby="workflow-guide-title">
+            <span aria-hidden="true">→</span>
             <div>
-                <p class="eyebrow">Step 1</p>
-                <h2 id="program-builder-title">Choose your split</h2>
+                <strong id="workflow-guide-title">What to do next</strong>
+                <p id="workflow-guide-message" aria-live="polite">Choose a workout split to begin.</p>
             </div>
-            <p id="program-status" class="program-status" role="status"></p>
-        </div>
+        </aside>
 
-        <div class="split-grid" id="split-options" aria-label="Workout splits"></div>
+        <p id="program-status" class="sr-status" role="status" aria-live="polite"></p>
 
-        <div class="schedule-panel">
-            <div class="schedule-controls">
-                <label for="schedule-options">Step 2: Choose schedule</label>
-                <select id="schedule-options" disabled>
-                    <option value="">Select a split first</option>
-                </select>
-            </div>
-            <div class="schedule-actions">
-                <button id="save-program" type="button">SAVE PROGRAM</button>
-                <button id="change-program" type="button">CHANGE PROGRAM</button>
-            </div>
-        </div>
-
-        <div class="schedule-preview" id="schedule-preview" aria-label="Weekly schedule preview"></div>
-    </section>
-
-    <main class="program-workspace" aria-labelledby="weekly-board-title">
-        <div class="workspace-heading">
-            <div>
-                <p class="eyebrow">Step 3</p>
-                <h2 id="weekly-board-title">Weekly workout board</h2>
-            </div>
-            <p id="board-empty-state">Save a split to start adding workouts.</p>
-        </div>
-
-        <div class="main-container" id="weekly-board">
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $day): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
-                <div class="main-days" id="<?php echo e($day); ?>" data-day="<?php echo e($day); ?>">
-                    <div class="day-card-header">
-                        <div>
-                            <h3><?php echo e($day); ?></h3>
-                            <p class="split-name">Choose a schedule</p>
-                        </div>
-                        <span class="workout-count">0</span>
-                    </div>
-                    <div class="workouts"></div>
-                    <p class="day-empty">Save a split to start adding workouts.</p>
-                    <button class="add" type="button" disabled>ADD WORKOUT</button>
+        <section class="program-page" data-program-page="selection" aria-labelledby="selection-title">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">Step 1</p>
+                    <h2 id="selection-title">Choose your split</h2>
+                    <p>Pick the structure that fits your week, then choose its schedule.</p>
                 </div>
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-        </div>
+            </div>
+
+            <div class="split-grid" id="split-options" aria-label="Workout splits"></div>
+
+            <div class="schedule-panel">
+                <div class="schedule-controls">
+                    <label for="schedule-options">Weekly schedule</label>
+                    <select id="schedule-options" disabled>
+                        <option value="">Select a split first</option>
+                    </select>
+                    <p id="schedule-summary">Choose a split to see available schedules.</p>
+                </div>
+                <div class="schedule-preview" id="schedule-preview" aria-label="Weekly schedule preview"></div>
+            </div>
+
+            <div class="page-actions page-actions--end">
+                <button class="button button--primary" id="selection-next" type="button" disabled>NEXT: EDIT WORKOUTS</button>
+            </div>
+        </section>
+
+        <section class="program-page" data-program-page="draft" aria-labelledby="draft-title" hidden>
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">Step 2</p>
+                    <h2 id="draft-title">Make it yours</h2>
+                    <p>Edit the generated exercises, sets, and rep ranges before saving.</p>
+                </div>
+                <div class="selection-chip" id="draft-selection-label"></div>
+            </div>
+
+            <div class="week-carousel" data-week-carousel>
+                <div class="carousel-toolbar">
+                    <p>Weekly schedule <span id="draft-carousel-progress" aria-live="polite">Day 1 of 7</span></p>
+                    <div class="carousel-actions">
+                        <button type="button" data-carousel-previous aria-label="Show previous day" aria-controls="draft-board">←</button>
+                        <button type="button" data-carousel-next aria-label="Show next day" aria-controls="draft-board">→</button>
+                    </div>
+                </div>
+                <div class="carousel-frame">
+                    <div class="weekly-board weekly-board--draft" id="draft-board" tabindex="0" aria-label="Editable weekly workout schedule"></div>
+                </div>
+            </div>
+
+            <div class="page-actions">
+                <button class="button button--secondary" id="draft-back" type="button">BACK</button>
+                <button class="button button--primary" id="save-program" type="button">SAVE PROGRAM</button>
+            </div>
+        </section>
+
+        <section class="program-page" data-program-page="summary" aria-labelledby="summary-title" hidden>
+            <div class="summary-hero">
+                <div>
+                    <p class="eyebrow">Your current program</p>
+                    <h2 id="summary-title"></h2>
+                    <p id="summary-schedule"></p>
+                </div>
+                <div class="summary-actions">
+                    <button class="button button--secondary" id="change-program" type="button">CHANGE PROGRAM</button>
+                </div>
+            </div>
+
+            <div class="week-carousel" data-week-carousel>
+                <div class="carousel-toolbar">
+                    <p>Your week <span id="summary-carousel-progress" aria-live="polite">Day 1 of 7</span></p>
+                    <div class="carousel-actions">
+                        <button type="button" data-carousel-previous aria-label="Show previous day" aria-controls="summary-board">←</button>
+                        <button type="button" data-carousel-next aria-label="Show next day" aria-controls="summary-board">→</button>
+                    </div>
+                </div>
+                <div class="carousel-frame">
+                    <div class="weekly-board weekly-board--summary" id="summary-board" tabindex="0" aria-label="Saved weekly workout schedule"></div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <div class="workout-modal" id="workout-modal" hidden>
-        <form class="add-workout" id="workout-form">
+        <form class="workout-form" id="workout-form" aria-labelledby="workout-form-title">
             <div class="modal-heading">
                 <div>
                     <p class="eyebrow" id="workout-form-day">Training day</p>
                     <h2 id="workout-form-title">Add workout</h2>
                 </div>
-                <button id="workout-form-cancel" class="icon-button" type="button" aria-label="Close workout form">X</button>
+                <button id="workout-form-cancel" class="modal-close" type="button" aria-label="Close workout form">&times;</button>
             </div>
-            <input type="hidden" id="workout-id">
             <input type="hidden" id="workout-day">
-            <label for="workout-name">Workout name</label>
-            <input type="text" id="workout-name" placeholder="Bench Press" autocomplete="off">
+            <label for="workout-name">Exercise</label>
+            <input type="text" id="workout-name" maxlength="120" placeholder="Bench Press" autocomplete="off" required>
             <div class="autocomplete-suggestions"></div>
-            <div class="form-row">
+            <label for="workout-focus">Muscle focus <span>Optional</span></label>
+            <input type="text" id="workout-focus" maxlength="120" placeholder="Chest">
+            <div class="form-metrics">
                 <div>
                     <label for="workout-sets">Sets</label>
-                    <input type="number" min="1" max="50" id="workout-sets" placeholder="3">
+                    <input type="number" min="1" max="50" id="workout-sets" required>
                 </div>
                 <div>
-                    <label for="workout-reps">Reps</label>
-                    <input type="number" min="1" max="100" id="workout-reps" placeholder="10">
+                    <label for="workout-reps-min">Min reps</label>
+                    <input type="number" min="1" max="100" id="workout-reps-min" required>
+                </div>
+                <div>
+                    <label for="workout-reps-max">Max reps</label>
+                    <input type="number" min="1" max="100" id="workout-reps-max" required>
                 </div>
             </div>
-            <button id="form-add" type="submit">SAVE WORKOUT</button>
+            <p class="field-error" id="workout-form-error" role="alert"></p>
+            <button class="button button--primary button--full" id="form-add" type="submit">SAVE WORKOUT</button>
         </form>
     </div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('scripts'); ?>
-    <script src="/index.js"></script>
-    <script src="/files/program.js"></script>
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/js/site.js', 'resources/js/pages/program.js']); ?>
 <?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', ['title' => 'GreekGods | Program'], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Users/angelomiranda/Projects/greekgods/resources/views/program/show.blade.php ENDPATH**/ ?>

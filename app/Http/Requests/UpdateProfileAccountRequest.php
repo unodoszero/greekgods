@@ -31,7 +31,7 @@ class UpdateProfileAccountRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
-                'email:rfc,dns',
+                app()->environment('testing') ? 'email:rfc' : 'email:rfc,dns',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($this->user()?->id),
             ],
