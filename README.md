@@ -81,6 +81,26 @@ complete HTTPS origin, for example `https://greekgods-psi.vercel.app`. GreekGods
 also trusts Vercel's forwarded HTTPS headers so generated Vite, Livewire, OAuth,
 and application URLs are not blocked as mixed content.
 
+### Production database migrations on Vercel
+
+The Vercel PHP runtime calls the Composer `vercel` script during deployment.
+GreekGods uses that hook to apply pending Laravel migrations only when both of
+these conditions are true:
+
+- The deployment environment is Production.
+- `RUN_DATABASE_MIGRATIONS=true` is configured for the Production environment.
+
+Keep `RUN_DATABASE_MIGRATIONS` unset or `false` for Preview and Development.
+The deployment runs `php artisan migrate --force --isolated --no-interaction`;
+it never runs `migrate:fresh`, so Laravel applies only migrations that have not
+already run.
+
+Before enabling the flag for a migration that deletes or transforms data, take
+a database backup and review the migration. The July 28 Program migration
+intentionally resets existing Program and Workout records. After that migration
+has completed successfully, later deployments will report that there is nothing
+new to migrate.
+
 ## Development and verification
 
 ```bash

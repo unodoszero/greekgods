@@ -117,4 +117,19 @@ class RepositoryStructureTest extends TestCase
             ->assertOk()
             ->assertSeeText('https://greekgods-psi.vercel.app/build/example.css');
     }
+
+    public function test_vercel_database_migrations_are_production_only_and_opt_in(): void
+    {
+        $composer = json_decode((string) file_get_contents(base_path('composer.json')), true);
+        $script = (string) file_get_contents(base_path('scripts/vercel-migrate.php'));
+
+        $this->assertSame(
+            ['@php scripts/vercel-migrate.php'],
+            $composer['scripts']['vercel'] ?? null,
+        );
+        $this->assertStringContainsString("\$environment !== 'production'", $script);
+        $this->assertStringContainsString('RUN_DATABASE_MIGRATIONS', $script);
+        $this->assertStringContainsString('migrate --force --isolated --no-interaction', $script);
+        $this->assertStringNotContainsString('migrate:fresh', $script);
+    }
 }
