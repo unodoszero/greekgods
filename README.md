@@ -19,14 +19,12 @@ GreekGods is a Laravel fitness-planning application for creating weekly workout 
 | <img src="public/preview/Login.png" alt="GreekGods login page" width="360"> | Login screen for returning users. |
 | <img src="public/preview/Register.png" alt="GreekGods registration page" width="360"> | Account registration screen for collecting user credentials and fitness profile details. |
 | <img src="public/preview/Register%202.png" alt="GreekGods registration continuation" width="360"> | Registration flow continuation for completing required profile information. |
-| <img src="public/preview/Profile.png" alt="GreekGods profile dashboard" width="360"> | Profile dashboard showing saved body metrics, BMI, calorie targets, and today's workout. |
-| <img src="public/preview/Program%20Page%20Splits.png" alt="GreekGods program split selection" width="360"> | Program builder split-selection step with available workout split templates. |
-| <img src="public/preview/Program%20Page%20Workouts.png" alt="GreekGods weekly workout board" width="360"> | Weekly workout board with schedule mapping, rest-day locking, and editable workouts. |
+| <img src="public/preview/profile-dashboard.png" alt="GreekGods profile dashboard with body composition, energy targets, and workout summary" width="360"> | Updated Profile dashboard with body metrics, BMI status, calorie and protein targets, today’s workout, and account settings. |
+| <img src="public/preview/program-builder-splits.png" alt="GreekGods guided program builder split selection" width="360"> | Updated Program builder selection page with guided split and schedule choices. |
+| <img src="public/preview/program-builder-workouts.png" alt="GreekGods horizontally scrolling weekly workout editor" width="360"> | Updated weekly Program editor with training and recovery days, workout controls, and horizontal navigation. |
 | <img src="public/preview/Blog.png" alt="GreekGods blog page" width="360"> | Blog index for fitness education and training articles. |
 | <img src="public/preview/Blog%20Beginner.png" alt="GreekGods beginner blog article" width="360"> | Beginner-focused article page for learning core fitness concepts. |
-| <img src="public/preview/BMI%20Calculator.png" alt="GreekGods BMI calculator" width="360"> | BMI calculator page for estimating body composition category from height and weight. |
-
-The screenshots are retained as historical previews and may not match every recent interface refinement.
+| <img src="public/preview/fitness-calculator.png" alt="GreekGods fitness calculator form and results experience" width="360"> | Updated Calculator for estimating BMI, BMR, TDEE, daily protein, and calorie targets. |
 
 ## Tech stack
 
